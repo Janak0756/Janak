@@ -338,6 +338,42 @@ nav ul li a[data-page="skill-summary"].active {
     color: var(--gray);
 }
 
+/* LinkedIn Section Styles */
+.linkedin-section {
+    border-left: 3px solid #0077B5;
+    margin: 20px 0 15px 0;
+    padding: 15px;
+    background: rgba(0, 119, 181, 0.05);
+    border-radius: 10px;
+}
+
+.btn-linkedin {
+    background-color: #0077B5;
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-linkedin:hover {
+    background-color: #006097;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 119, 181, 0.3);
+}
+
+.btn-linkedin i {
+    margin-right: 8px;
+}
+
+/* LinkedIn Status Indicators */
+.linkedin-connected {
+    color: #0077B5;
+    font-weight: 600;
+}
+
+.linkedin-disconnected {
+    color: var(--gray);
+}
+
 /* Skills Styles */
 .skills-list {
     display: flex;
@@ -1585,4 +1621,50 @@ footer {
 
 .events-page .right-sidebar {
     /* Empty sidebar for layout balance */
+}
+
+/* LinkedIn Profile Preview */
+.linkedin-profile-preview {
+    background: white;
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 10px;
+    border: 1px solid rgba(0, 119, 181, 0.2);
+    font-size: 0.85rem;
+}
+
+.linkedin-profile-preview strong {
+    color: #0077B5;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.linkedin-profile-preview .profile-url {
+    color: var(--gray);
+    font-size: 0.8rem;
+    word-break: break-all;
+}
+
+/* LinkedIn Stats */
+.linkedin-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0, 119, 181, 0.1);
+}
+
+.linkedin-stat {
+    text-align: center;
+}
+
+.linkedin-stat-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0077B5;
+}
+
+.linkedin-stat-label {
+    font-size: 0.7rem;
+    color: var(--gray);
 }
