@@ -225,7 +225,7 @@ function initializeNetworkFilters() {
 
     let activeFilters = {
         department: "",
-        skills: "",
+                skills: "",
         role: "",
         year: ""
     };
@@ -1765,26 +1765,6 @@ function syncLinkedInData(role) {
 // Initialize LinkedIn functionality when dashboard loads
 function initializeLinkedInOnDashboardLoad() {
     if (currentRole) {
-        // Add sync buttons if not exists
-        const studentLinkedinSection = document.querySelector('#student-dashboard .linkedin-section');
-        const facultyLinkedinSection = document.querySelector('#faculty-dashboard .linkedin-section');
-        
-        if (studentLinkedinSection && !studentLinkedinSection.querySelector('.sync-linkedin-btn')) {
-            studentLinkedinSection.innerHTML += `
-                <button class="btn btn-outline" style="width: 100%; margin-top: 8px;" onclick="syncLinkedInData('student')">
-                    <i class="fas fa-sync-alt"></i> Sync LinkedIn Data
-                </button>
-            `;
-        }
-        
-        if (facultyLinkedinSection && !facultyLinkedinSection.querySelector('.sync-linkedin-btn')) {
-            facultyLinkedinSection.innerHTML += `
-                <button class="btn btn-outline" style="width: 100%; margin-top: 8px;" onclick="syncLinkedInData('faculty')">
-                    <i class="fas fa-sync-alt"></i> Sync LinkedIn Data
-                </button>
-            `;
-        }
-        
         // Update UI
         updateLinkedInUI(currentRole);
     }
