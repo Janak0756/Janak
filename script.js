@@ -12,7 +12,6 @@ const navLinks = document.querySelectorAll('.nav-link');
 const pages = document.querySelectorAll('.page');
 const mainHeader = document.getElementById('main-header');
 const mainFooter = document.getElementById('main-footer');
-const adminTab = document.getElementById('adminTab');
 
 // Demo accounts
 const demoAccounts = {
@@ -32,6 +31,24 @@ const demoAccounts = {
 
 // Track currently editing skill
 let editingSkill = null;
+
+// LinkedIn state management
+let linkedinProfiles = {
+    student: {
+        connected: false,
+        profileUrl: null,
+        connections: 0,
+        followers: 0,
+        profileData: null
+    },
+    faculty: {
+        connected: false,
+        profileUrl: null,
+        connections: 0,
+        followers: 0,
+        profileData: null
+    }
+};
 
 //skill modelsystem
 function createSkillModal() {
@@ -94,19 +111,23 @@ function createSkillModal() {
         </div>
     `;
 
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    // Prevent duplicate modal creation
+    if (!document.getElementById('skillModal')) {
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-    document.getElementById('closeSkillModal').addEventListener('click', closeSkillModal);
-    document.getElementById('cancelSkillBtn').addEventListener('click', closeSkillModal);
-    document.getElementById('saveSkillBtn').addEventListener('click', saveSkill);
-    document.getElementById('deleteSkillBtn').addEventListener('click', deleteSkill);
+        document.getElementById('closeSkillModal').addEventListener('click', closeSkillModal);
+        document.getElementById('cancelSkillBtn').addEventListener('click', closeSkillModal);
+        document.getElementById('saveSkillBtn').addEventListener('click', saveSkill);
+        document.getElementById('deleteSkillBtn').addEventListener('click', deleteSkill);
 
-    document.getElementById('skillName').addEventListener('input', updateSkillPreview);
-    document.getElementById('skillLevel').addEventListener('change', updateSkillPreview);
+        document.getElementById('skillName').addEventListener('input', updateSkillPreview);
+        document.getElementById('skillLevel').addEventListener('change', updateSkillPreview);
+    }
 }
 
 function closeSkillModal() {
-    document.getElementById('skillModal').style.display = 'none';
+    const skillModal = document.getElementById('skillModal');
+    if (skillModal) skillModal.style.display = 'none';
     editingSkill = null;
 }
 
@@ -167,7 +188,9 @@ function deleteSkill() {
         editingSkill.remove();
 
         const count = document.getElementById('studentSkills');
-        count.textContent = parseInt(count.textContent) - 1;
+        if (count) {
+            count.textContent = parseInt(count.textContent) - 1;
+        }
 
         showNotification('Skill deleted!', 'success');
         closeSkillModal();
@@ -452,13 +475,14 @@ function showDashboard() {
     document.getElementById(cfg.nameId).textContent = currentUser.name;
     document.getElementById(cfg.titleId).textContent = currentUser.title;
 
-    adminTab.classList.toggle('hidden', currentRole === 'student');
-
     navLinks.forEach(n => n.classList.remove('active'));
     document.querySelector('[data-page="dashboard"]').classList.add('active');
 
     setTimeout(initializeSkills, 100);
+    
+    // Initialize LinkedIn buttons
     initializeLinkedInButtons();
+    setTimeout(initializeLinkedInOnDashboardLoad, 150);
 }
 
 function handleLogout() {
@@ -1384,6 +1408,21 @@ function initializeSkills() {
 ========================================================= */
 function openSkillModal() {
     const cfg = ROLE_CONFIG[currentRole];
+    const modalTitle = document.getElementById('modalTitle');
+    const saveSkillBtn = document.getElementById('saveSkillBtn');
+    const deleteSection = document.getElementById('deleteSection');
+    const skillName = document.getElementById('skillName');
+    const skillLevel = document.getElementById('skillLevel');
+    const skillCategory = document.getElementById('skillCategory');
+    const skillModal = document.getElementById('skillModal');
+
+    if (!skillModal) {
+        createSkillModal();
+        // Wait for modal to be created
+        setTimeout(() => openSkillModal(), 100);
+        return;
+    }
+
     editingSkill = null;
 
     modalTitle.textContent = cfg.modalAddTitle;
@@ -1403,6 +1442,10 @@ function openSkillModal() {
 ========================================================= */
 function saveSkill() {
     const cfg = ROLE_CONFIG[currentRole];
+    const skillName = document.getElementById('skillName');
+    const skillLevel = document.getElementById('skillLevel');
+    const skillCategory = document.getElementById('skillCategory');
+
     const name = skillName.value.trim();
     const level = skillLevel.value;
     const category = skillCategory.value;
@@ -1446,6 +1489,15 @@ function saveSkill() {
 ========================================================= */
 async function runAIAnalysis() {
     const cfg = ROLE_CONFIG[currentRole];
+    const enhanceModal = document.getElementById('enhanceModal');
+    const enhanceContent = document.getElementById('enhanceContent');
+    
+    if (!enhanceModal) {
+        createEnhanceModal();
+        setTimeout(() => runAIAnalysis(), 100);
+        return;
+    }
+    
     enhanceModal.style.display = 'flex';
     enhanceContent.innerHTML = `<p style="color:var(--gray)">Analyzing...</p>`;
 
@@ -1474,55 +1526,269 @@ Object.values(ROLE_CONFIG).forEach(cfg => {
     document.getElementById(cfg.aiBtnId)?.addEventListener('click', runAIAnalysis);
 });
 
-/* =========================================================
-   INIT ON LOAD
-========================================================= */
-window.addEventListener('load', () => {
-    if (!skillModal) createSkillModal();
-    if (!enhanceModal) createEnhanceModal();
-    initializeSkills();
-});
-
-window.addEventListener("load", () => {
-    if (!document.getElementById("skillModal")) {
-        createSkillModal();
+// Initialize LinkedIn buttons
+function initializeLinkedInButtons() {
+    // Student LinkedIn buttons
+    const studentConnectBtn = document.getElementById('connectStudentLinkedinBtn');
+    const studentViewBtn = document.getElementById('viewStudentLinkedinBtn');
+    
+    if (studentConnectBtn) {
+        studentConnectBtn.addEventListener('click', () => {
+            connectLinkedIn('student');
+        });
     }
-
-    if (!document.getElementById("enhanceModal")) {
-        createEnhanceModal();
+    
+    if (studentViewBtn) {
+        studentViewBtn.addEventListener('click', () => {
+            viewLinkedInProfile('student');
+        });
     }
-
-    initializeExistingSkills();
-});
-
-//forxing dashboard to initialize 
-function initializeDashboardAfterLogin() {
-    // initialize skill click handlers
-    initializeExistingSkills();
-
-    // student AI button
-    document.getElementById("enhanceSkillBtn") &&
-        document.getElementById("enhanceSkillBtn").click;
-
-    // faculty AI button
-    document.getElementById("analyzeResearchBtn") &&
-        document.getElementById("analyzeResearchBtn").click;
+    
+    // Faculty LinkedIn buttons
+    const facultyConnectBtn = document.getElementById('connectFacultyLinkedinBtn');
+    const facultyViewBtn = document.getElementById('viewFacultyLinkedinBtn');
+    
+    if (facultyConnectBtn) {
+        facultyConnectBtn.addEventListener('click', () => {
+            connectLinkedIn('faculty');
+        });
+    }
+    
+    if (facultyViewBtn) {
+        facultyViewBtn.addEventListener('click', () => {
+            viewLinkedInProfile('faculty');
+        });
+    }
+    
+    // Update initial state
+    updateLinkedInUI('student');
+    updateLinkedInUI('faculty');
 }
 
-// Initialize LinkedIn buttons in faculty dashboard
-document.addEventListener('DOMContentLoaded', function() {
-    // Add LinkedIn button functionality
-    const linkedinButtons = document.querySelectorAll('.btn-outline.btn-small');
-    linkedinButtons.forEach(btn => {
-        if (btn.innerHTML.includes('fa-linkedin')) {
-            btn.addEventListener('click', function() {
-                const profileName = this.closest('.suggested-profile')
-                    .querySelector('.profile-name-small').textContent;
-                alert(`Opening LinkedIn profile for ${profileName} (demo)`);
+// Connect LinkedIn function
+function connectLinkedIn(role) {
+    const profileName = role === 'student' 
+        ? currentUser?.name || 'Student User' 
+        : currentUser?.name || 'Faculty Member';
+    
+    // Simulate LinkedIn OAuth flow
+    const linkedinUrl = prompt(
+        `Enter your LinkedIn profile URL for ${profileName}:\n\nExample: https://www.linkedin.com/in/yourusername`,
+        `https://www.linkedin.com/in/${profileName.toLowerCase().replace(/\s+/g, '-')}`
+    );
+    
+    if (linkedinUrl) {
+        // Validate URL format
+        if (linkedinUrl.includes('linkedin.com/in/')) {
+            // Simulate successful connection
+            linkedinProfiles[role] = {
+                connected: true,
+                profileUrl: linkedinUrl,
+                connections: Math.floor(Math.random() * 500) + 100,
+                followers: Math.floor(Math.random() * 1000) + 50,
+                profileData: {
+                    headline: role === 'student' ? 'Computer Science Student' : 'AI Research Faculty',
+                    location: 'University Campus',
+                    joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                }
+            };
+            
+            // Update UI
+            updateLinkedInUI(role);
+            
+            // Show success notification
+            showNotification(`${role.charAt(0).toUpperCase() + role.slice(1)} LinkedIn profile connected!`, 'success');
+        } else {
+            alert('Please enter a valid LinkedIn profile URL (should contain linkedin.com/in/)');
+        }
+    }
+}
+
+// View LinkedIn profile
+function viewLinkedInProfile(role) {
+    const profile = linkedinProfiles[role];
+    
+    if (profile.connected && profile.profileUrl) {
+        // In a real app, this would open the LinkedIn profile
+        // For demo, show a modal with profile info
+        const profileName = role === 'student' 
+            ? currentUser?.name || 'Student User' 
+            : currentUser?.name || 'Faculty Member';
+        
+        const modalContent = `
+            <div style="text-align: left;">
+                <h3 style="color: #0077B5; margin-bottom: 15px;">
+                    <i class="fab fa-linkedin"></i> LinkedIn Profile
+                </h3>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="font-weight: 600; font-size: 1.1rem; color: #0077B5; margin-bottom: 5px;">
+                        ${profileName}
+                    </div>
+                    <div style="color: var(--gray); margin-bottom: 10px;">
+                        ${profile.profileData.headline}
+                    </div>
+                    <div style="font-size: 0.9rem; color: #666;">
+                        <i class="fas fa-map-marker-alt"></i> ${profile.profileData.location}
+                    </div>
+                </div>
+                
+                <div class="linkedin-stats">
+                    <div class="linkedin-stat">
+                        <div class="linkedin-stat-value">${profile.connections}+</div>
+                        <div class="linkedin-stat-label">Connections</div>
+                    </div>
+                    <div class="linkedin-stat">
+                        <div class="linkedin-stat-value">${profile.followers}</div>
+                        <div class="linkedin-stat-label">Followers</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; font-size: 0.9rem;">
+                    <strong>Profile URL:</strong>
+                    <div class="profile-url" style="word-break: break-all; margin-top: 5px;">
+                        <a href="${profile.profileUrl}" target="_blank">${profile.profileUrl}</a>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px; font-size: 0.85rem; color: var(--gray);">
+                    <i class="fas fa-info-circle"></i> In a real implementation, this would redirect to LinkedIn
+                </div>
+            </div>
+        `;
+        
+        // Show modal with profile info
+        if (confirm(`Open LinkedIn profile for ${profileName}?\n\nURL: ${profile.profileUrl}\n\nClick OK to see profile details`)) {
+            // Create a simple modal
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 25px; border-radius: 15px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: #0077B5;">LinkedIn Profile Preview</h3>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray);">&times;</button>
+                    </div>
+                    ${modalContent}
+                    <div style="margin-top: 20px; text-align: right;">
+                        <button onclick="window.open('${profile.profileUrl}', '_blank'); this.closest('.modal-overlay').remove();" style="background: #0077B5; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
+                            Open in New Tab
+                        </button>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background: var(--gray); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.remove();
+                }
             });
         }
-    });
-});
+    } else {
+        showNotification('LinkedIn profile not connected yet', 'error');
+    }
+}
+
+// Update LinkedIn UI based on connection status
+function updateLinkedInUI(role) {
+    const profile = linkedinProfiles[role];
+    const statusElement = document.getElementById(`${role}LinkedinStatus`);
+    const connectBtn = document.getElementById(`connect${role.charAt(0).toUpperCase() + role.slice(1)}LinkedinBtn`);
+    const viewBtn = document.getElementById(`view${role.charAt(0).toUpperCase() + role.slice(1)}LinkedinBtn`);
+    
+    if (!statusElement || !connectBtn) return;
+    
+    if (profile.connected) {
+        statusElement.innerHTML = `
+            <span class="linkedin-connected">
+                <i class="fas fa-check-circle"></i> Connected
+            </span>
+            <br>
+            <small style="color: var(--gray);">Last synced: Just now</small>
+        `;
+        connectBtn.style.display = 'none';
+        if (viewBtn) {
+            viewBtn.style.display = 'block';
+        }
+    } else {
+        statusElement.innerHTML = `
+            <span class="linkedin-disconnected">
+                <i class="fas fa-unlink"></i> Not connected
+            </span>
+            <br>
+            <small style="color: var(--gray);">Connect to share your profile</small>
+        `;
+        connectBtn.style.display = 'block';
+        if (viewBtn) {
+            viewBtn.style.display = 'none';
+        }
+    }
+}
+
+// Sync LinkedIn data (simulated)
+function syncLinkedInData(role) {
+    if (linkedinProfiles[role].connected) {
+        // Simulate syncing data
+        const profile = linkedinProfiles[role];
+        
+        // Update some stats randomly
+        profile.connections += Math.floor(Math.random() * 10);
+        profile.followers += Math.floor(Math.random() * 5);
+        
+        // Update UI
+        updateLinkedInUI(role);
+        
+        showNotification('LinkedIn data synced successfully!', 'success');
+    } else {
+        showNotification('Please connect LinkedIn first', 'error');
+    }
+}
+
+// Initialize LinkedIn functionality when dashboard loads
+function initializeLinkedInOnDashboardLoad() {
+    if (currentRole) {
+        // Add sync buttons if not exists
+        const studentLinkedinSection = document.querySelector('#student-dashboard .linkedin-section');
+        const facultyLinkedinSection = document.querySelector('#faculty-dashboard .linkedin-section');
+        
+        if (studentLinkedinSection && !studentLinkedinSection.querySelector('.sync-linkedin-btn')) {
+            studentLinkedinSection.innerHTML += `
+                <button class="btn btn-outline" style="width: 100%; margin-top: 8px;" onclick="syncLinkedInData('student')">
+                    <i class="fas fa-sync-alt"></i> Sync LinkedIn Data
+                </button>
+            `;
+        }
+        
+        if (facultyLinkedinSection && !facultyLinkedinSection.querySelector('.sync-linkedin-btn')) {
+            facultyLinkedinSection.innerHTML += `
+                <button class="btn btn-outline" style="width: 100%; margin-top: 8px;" onclick="syncLinkedInData('faculty')">
+                    <i class="fas fa-sync-alt"></i> Sync LinkedIn Data
+                </button>
+            `;
+        }
+        
+        // Update UI
+        updateLinkedInUI(currentRole);
+    }
+}
 
 // Initialize clubs page scroll functionality
 function initializeClubsPage() {
@@ -1542,49 +1808,6 @@ function initializeClubsPage() {
     });
 }
 
-// LinkedIn Button Functionality
-function initializeLinkedInButtons() {
-    // Handle LinkedIn button clicks for both student and faculty
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.btn-linkedin') || 
-            (e.target.closest('.btn-outline') && e.target.closest('.btn-outline').innerHTML.includes('fa-linkedin'))) {
-            
-            const button = e.target.closest('.btn-linkedin') || e.target.closest('.btn-outline');
-            const profileCard = button.closest('.suggested-profile') || 
-                               button.closest('.profile-card') || 
-                               button.closest('.card');
-            
-            let profileName = 'User';
-            
-            if (profileCard.querySelector('.profile-name-small')) {
-                profileName = profileCard.querySelector('.profile-name-small').textContent;
-            } else if (profileCard.querySelector('.profile-name')) {
-                profileName = profileCard.querySelector('.profile-name').textContent;
-            } else if (profileCard.querySelector('.post-user')) {
-                profileName = profileCard.querySelector('.post-user').textContent;
-            }
-            
-            const role = currentRole || 'user';
-            const currentUserName = currentUser ? currentUser.name : 'User';
-            
-            if (button.textContent.includes('Connect LinkedIn')) {
-                // For connecting user's own LinkedIn
-                const confirmConnect = confirm(`Connect your LinkedIn profile for ${currentUserName} (${role} account)?\n\nIn a real implementation, this would redirect to LinkedIn OAuth.`);
-                if (confirmConnect) {
-                    button.innerHTML = '<i class="fab fa-linkedin"></i> Connected';
-                    button.classList.remove('btn-linkedin', 'btn-outline');
-                    button.classList.add('btn-primary');
-                    button.disabled = true;
-                    showNotification('LinkedIn connected successfully!', 'success');
-                }
-            } else {
-                // For viewing someone else's LinkedIn
-                alert(`Viewing LinkedIn profile for ${profileName}\n\nIn a real implementation, this would open their LinkedIn profile.`);
-            }
-        }
-    });
-}
-
 // Initialize events page
 function initializeEventsPage() {
     // Make all scrollable content functional
@@ -1596,68 +1819,30 @@ function initializeEventsPage() {
     });
 }
 
-// Add to page switching for clubs
-function showPage(pageId) {
-    pages.forEach(page => page.classList.remove('active'));
-
-    if (pageId === 'dashboard') {
-        if (currentRole === 'student') {
-            document.getElementById('student-dashboard')?.classList.add('active');
-            setTimeout(initializeExistingSkills, 100);
-        } else {
-            document.getElementById('faculty-dashboard')?.classList.add('active');
-        }
-        return;
+/* =========================================================
+   INIT ON LOAD
+========================================================= */
+window.addEventListener('load', () => {
+    if (!document.getElementById("skillModal")) {
+        createSkillModal();
     }
 
-    // Handle skill-summary page
-    if (pageId === 'skill-summary') {
-        document.getElementById('skill-summary-page')?.classList.add('active');
-        return;
+    if (!document.getElementById("enhanceModal")) {
+        createEnhanceModal();
     }
 
-    const pageEl = document.getElementById(`${pageId}-page`);
-    if (pageEl) {
-        pageEl.classList.add('active');
-    }
-
-    if (pageId === 'network') {
-        setTimeout(initializeNetworkPage, 100);
-    }
-
-    if (pageId === 'clubs') {
-        setTimeout(() => {
-            initializeJoinClubButtons();
-            updateMyClubsUI();
-            initializeClubsPage();
-        }, 100);
-    }
-
-    if (pageId === 'projects') {
-        setTimeout(pc_onProjectsPageShow, 150);
-    }
-
-    if (pageId === 'events') {
-        setTimeout(initializeEventsPage, 100);
-    }
-}
-
-// Call this function in your initialization
-window.addEventListener('load', function() {
+    initializeExistingSkills();
     initializeLinkedInButtons();
-    // ... other initialization code
-});
-
-// Add event listener for the new skill summary button
-document.getElementById('viewFullSkillSummaryBtn')?.addEventListener('click', function() {
-    showPage('skill-summary');
     
-    // Update navigation to show skill-summary as active
-    navLinks.forEach(nav => nav.classList.remove('active'));
+    // Initialize when dashboard is shown
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.nav-link[data-page="dashboard"]')) {
+            setTimeout(initializeLinkedInOnDashboardLoad, 100);
+        }
+    });
     
-    // Create a temporary skill-summary nav link if it doesn't exist
-    const skillSummaryLink = document.querySelector('[data-page="skill-summary"]');
-    if (skillSummaryLink) {
-        skillSummaryLink.classList.add('active');
+    // Also initialize on page load if already on dashboard
+    if (document.querySelector('#student-dashboard.active') || document.querySelector('#faculty-dashboard.active')) {
+        setTimeout(initializeLinkedInOnDashboardLoad, 100);
     }
 });
