@@ -1668,3 +1668,30 @@ footer {
     font-size: 0.7rem;
     color: var(--gray);
 }
+
+/* Event Stats Grid */
+.event-stats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.event-stats-grid .stat-card {
+    background: var(--light);
+    border: none;
+    box-shadow: none;
+    padding: 15px;
+    margin: 0;
+    text-align: center;
+}
+
+.event-stats-grid .stat-number {
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin-bottom: 5px;
+}
+
+.event-stats-grid .stat-label {
+    font-size: 0.85rem;
+    color: var(--gray);
+}
