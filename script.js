@@ -50,7 +50,41 @@ let linkedinProfiles = {
     }
 };
 
-//skill modelsystem
+// In-memory store for projects
+let pc_projects = [];
+let pc_requests = [];
+
+// ROLE CONFIGURATION
+const ROLE_CONFIG = {
+    student: {
+        dashboardId: 'student-dashboard',
+        nameId: 'studentName',
+        titleId: 'studentTitle',
+        skillListId: 'studentSkillsList',
+        skillCountId: 'studentSkills',
+        addSkillBtnId: 'addStudentSkillBtn',
+        aiBtnId: 'enhanceSkillBtn',
+        modalAddTitle: 'Add New Skill',
+        modalAddBtn: 'Add Skill',
+        defaultCategory: 'programming'
+    },
+    faculty: {
+        dashboardId: 'faculty-dashboard',
+        nameId: 'facultyName',
+        titleId: 'facultyTitle',
+        skillListId: 'facultyResearchAreas',
+        skillCountId: null,
+        addSkillBtnId: 'addResearchAreaBtn',
+        aiBtnId: 'analyzeResearchBtn',
+        modalAddTitle: 'Add Research Area',
+        modalAddBtn: 'Add Research Area',
+        defaultCategory: 'research'
+    }
+};
+
+/* =========================================================
+   MODAL CREATION FUNCTIONS
+========================================================= */
 function createSkillModal() {
     const modalHTML = `
         <div class="modal-overlay" id="skillModal" style="display: none;">
@@ -60,12 +94,10 @@ function createSkillModal() {
                     <button class="modal-close" id="closeSkillModal">&times;</button>
                 </div>
                 <div class="modal-body">
-
                     <div class="form-group">
                         <label for="skillName">Skill Name</label>
                         <input type="text" class="form-control" id="skillName" placeholder="Enter skill name">
                     </div>
-
                     <div class="form-group">
                         <label for="skillLevel">Proficiency Level</label>
                         <select class="form-control" id="skillLevel">
@@ -75,7 +107,6 @@ function createSkillModal() {
                             <option value="expert">Expert</option>
                         </select>
                     </div>
-
                     <div class="form-group">
                         <label for="skillCategory">Category</label>
                         <select class="form-control" id="skillCategory">
@@ -86,7 +117,6 @@ function createSkillModal() {
                             <option value="other">Other</option>
                         </select>
                     </div>
-
                     <div class="skills-preview">
                         <h4>Preview:</h4>
                         <div class="preview-skill-tag">
@@ -94,7 +124,6 @@ function createSkillModal() {
                             <span class="skill-level-badge" id="previewSkillLevel">Beginner</span>
                         </div>
                     </div>
-
                     <div class="delete-section" id="deleteSection" style="display: none;">
                         <hr>
                         <button class="btn btn-danger" id="deleteSkillBtn" style="width: 100%;">
@@ -102,7 +131,6 @@ function createSkillModal() {
                         </button>
                     </div>
                 </div>
-
                 <div class="modal-footer">
                     <button class="btn btn-outline" id="cancelSkillBtn">Cancel</button>
                     <button class="btn btn-primary" id="saveSkillBtn">Add Skill</button>
@@ -111,20 +139,45 @@ function createSkillModal() {
         </div>
     `;
 
-    // Prevent duplicate modal creation
     if (!document.getElementById('skillModal')) {
         document.body.insertAdjacentHTML('beforeend', modalHTML);
-
         document.getElementById('closeSkillModal').addEventListener('click', closeSkillModal);
         document.getElementById('cancelSkillBtn').addEventListener('click', closeSkillModal);
         document.getElementById('saveSkillBtn').addEventListener('click', saveSkill);
         document.getElementById('deleteSkillBtn').addEventListener('click', deleteSkill);
-
         document.getElementById('skillName').addEventListener('input', updateSkillPreview);
         document.getElementById('skillLevel').addEventListener('change', updateSkillPreview);
     }
 }
 
+function createEnhanceModal() {
+    const modalHTML = `
+        <div class="modal-overlay" id="enhanceModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>AI Skill Enhancement Suggestions</h3>
+                    <button class="modal-close" id="closeEnhanceModal">&times;</button>
+                </div>
+                <div class="modal-body" id="enhanceContent">
+                    <p style="color: var(--gray);">Analyzing your skills...</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" id="closeEnhanceBtn">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    if (!document.getElementById('enhanceModal')) {
+        document.body.insertAdjacentHTML("beforeend", modalHTML);
+        document.getElementById("closeEnhanceModal").addEventListener("click", closeEnhanceModal);
+        document.getElementById("closeEnhanceBtn").addEventListener("click", closeEnhanceModal);
+    }
+}
+
+/* =========================================================
+   SKILL MODAL FUNCTIONS
+========================================================= */
 function closeSkillModal() {
     const skillModal = document.getElementById('skillModal');
     if (skillModal) skillModal.style.display = 'none';
@@ -134,7 +187,6 @@ function closeSkillModal() {
 function updateSkillPreview() {
     const skillName = document.getElementById('skillName').value || 'Skill Name';
     const skillLevel = document.getElementById('skillLevel').value;
-
     document.getElementById('previewSkillName').textContent = skillName;
     document.getElementById('previewSkillLevel').textContent =
         skillLevel.charAt(0).toUpperCase() + skillLevel.slice(1);
@@ -142,7 +194,6 @@ function updateSkillPreview() {
 
 function openEditSkillModal(skillElement) {
     editingSkill = skillElement;
-
     document.getElementById('modalTitle').textContent = 'Edit Skill';
     document.getElementById('saveSkillBtn').textContent = 'Update Skill';
     document.getElementById('deleteSection').style.display = 'block';
@@ -159,6 +210,91 @@ function openEditSkillModal(skillElement) {
     document.getElementById('skillModal').style.display = 'flex';
 }
 
+function openSkillModal() {
+    const cfg = ROLE_CONFIG[currentRole];
+    const modalTitle = document.getElementById('modalTitle');
+    const saveSkillBtn = document.getElementById('saveSkillBtn');
+    const deleteSection = document.getElementById('deleteSection');
+    const skillName = document.getElementById('skillName');
+    const skillLevel = document.getElementById('skillLevel');
+    const skillCategory = document.getElementById('skillCategory');
+    const skillModal = document.getElementById('skillModal');
+
+    if (!skillModal) {
+        createSkillModal();
+        setTimeout(() => openSkillModal(), 100);
+        return;
+    }
+
+    editingSkill = null;
+    modalTitle.textContent = cfg.modalAddTitle;
+    saveSkillBtn.textContent = cfg.modalAddBtn;
+    deleteSection.style.display = 'none';
+    skillName.value = '';
+    skillLevel.value = 'intermediate';
+    skillCategory.value = cfg.defaultCategory;
+
+    updateSkillPreview();
+    skillModal.style.display = 'flex';
+}
+
+function saveSkill() {
+    const cfg = ROLE_CONFIG[currentRole];
+    const skillName = document.getElementById('skillName');
+    const skillLevel = document.getElementById('skillLevel');
+    const skillCategory = document.getElementById('skillCategory');
+
+    const name = skillName.value.trim();
+    const level = skillLevel.value;
+    const category = skillCategory.value;
+
+    if (!name) return alert('Enter a skill name');
+
+    if (editingSkill) {
+        editingSkill.innerHTML = `
+            ${name}
+            <span class="skill-level-badge">${level.charAt(0).toUpperCase() + level.slice(1)}</span>
+        `;
+        editingSkill.dataset.level = level;
+        editingSkill.dataset.category = category;
+        showNotification('Skill updated!', 'success');
+    } else {
+        const skill = document.createElement('span');
+        skill.className = 'skill-tag';
+        skill.dataset.level = level;
+        skill.dataset.category = category;
+        skill.innerHTML = `
+            ${name}
+            <span class="skill-level-badge">${level.charAt(0).toUpperCase() + level.slice(1)}</span>
+        `;
+
+        document.getElementById(cfg.skillListId).appendChild(skill);
+
+        if (cfg.skillCountId) {
+            const count = document.getElementById(cfg.skillCountId);
+            count.textContent = parseInt(count.textContent) + 1;
+        }
+
+        showNotification('Skill added!', 'success');
+    }
+
+    closeSkillModal();
+    initializeSkills();
+}
+
+function deleteSkill() {
+    if (!editingSkill) return;
+    if (confirm('Delete this skill?')) {
+        editingSkill.remove();
+        const count = document.getElementById('studentSkills');
+        if (count) {
+            count.textContent = parseInt(count.textContent) - 1;
+        }
+        showNotification('Skill deleted!', 'success');
+        closeSkillModal();
+    }
+}
+
 function initializeExistingSkills() {
     const lists = [
         document.getElementById('studentSkillsList'),
@@ -167,11 +303,9 @@ function initializeExistingSkills() {
 
     lists.forEach(list => {
         if (!list) return;
-
         list.querySelectorAll('.skill-tag').forEach(skill => {
             if (!skill.hasAttribute('data-edit-init')) {
                 skill.setAttribute('data-edit-init', 'true');
-
                 skill.addEventListener('click', (e) => {
                     e.stopPropagation();
                     openEditSkillModal(skill);
@@ -181,28 +315,29 @@ function initializeExistingSkills() {
     });
 }
 
-function deleteSkill() {
-    if (!editingSkill) return;
+function initializeSkills() {
+    const cfg = ROLE_CONFIG[currentRole];
+    const list = document.getElementById(cfg.skillListId);
+    if (!list) return;
 
-    if (confirm('Delete this skill?')) {
-        editingSkill.remove();
-
-        const count = document.getElementById('studentSkills');
-        if (count) {
-            count.textContent = parseInt(count.textContent) - 1;
+    list.querySelectorAll('.skill-tag').forEach(skill => {
+        if (!skill.dataset.bound) {
+            skill.dataset.bound = "true";
+            skill.addEventListener('click', e => {
+                e.stopPropagation();
+                openEditSkillModal(skill);
+            });
         }
-
-        showNotification('Skill deleted!', 'success');
-        closeSkillModal();
-    }
+    });
 }
 
-//notifications
+/* =========================================================
+   NOTIFICATION SYSTEM
+========================================================= */
 function showNotification(msg, type = 'info') {
     const box = document.createElement('div');
     box.className = `notification ${type}`;
     box.textContent = msg;
-
     document.body.appendChild(box);
 
     setTimeout(() => box.classList.add('show'), 30);
@@ -212,7 +347,9 @@ function showNotification(msg, type = 'info') {
     }, 2600);
 }
 
-//netwrok filter option
+/* =========================================================
+   NETWORK PAGE FUNCTIONS
+========================================================= */
 function initializeNetworkFilters() {
     const departmentFilter = document.getElementById('departmentFilter');
     const skillsFilter = document.getElementById('skillsFilter');
@@ -220,12 +357,11 @@ function initializeNetworkFilters() {
     const yearFilter = document.getElementById('yearFilter');
     const applyFiltersBtn = document.getElementById('applyFiltersBtn');
     const resetFiltersBtn = document.getElementById('resetFiltersBtn');
-
     const profileCards = document.querySelectorAll('#network-page .profile-card');
 
     let activeFilters = {
         department: "",
-                skills: "",
+        skills: "",
         role: "",
         year: ""
     };
@@ -244,10 +380,8 @@ function initializeNetworkFilters() {
         };
 
         let count = 0;
-
         profileCards.forEach(card => {
             let show = true;
-
             const cardDept = card.getAttribute('data-department');
             const cardRole = card.getAttribute('data-role');
             const cardYear = card.getAttribute('data-year');
@@ -275,249 +409,83 @@ function initializeNetworkFilters() {
     });
 
     applyFiltersBtn.addEventListener('click', applyFilters);
-
     applyFilters();
 }
 
-//connect btns
 function initializeConnectButtons() {
     const buttons = document.querySelectorAll('#network-page .btn-primary');
-
     buttons.forEach(button => {
         if (!button.hasAttribute('data-init')) {
             button.setAttribute('data-init', 'true');
-
             button.addEventListener('click', function () {
                 const profileCard = this.closest('.profile-card');
                 const name = profileCard.querySelector('.profile-name').textContent;
-
                 this.innerHTML = '<i class="fas fa-check"></i> Request Sent';
                 this.classList.remove('btn-primary');
                 this.classList.add('btn-outline');
                 this.disabled = true;
-
                 showNotification(`Connection request sent to ${name}`, 'success');
             });
         }
     });
 }
 
-//mentorship and groups
 function initializeMentorshipButtons() {
-    // Mentorship
     const mentorBtns = document.querySelectorAll('.mentorship-list .btn');
-
     mentorBtns.forEach(btn => {
         if (!btn.hasAttribute('data-init')) {
             btn.setAttribute('data-init', 'true');
-
             btn.addEventListener('click', function () {
                 const name = this.closest('.mentor-item')
                     .querySelector('.post-user').textContent;
-
                 this.innerHTML = '<i class="fas fa-check"></i> Requested';
                 this.classList.remove('btn-outline');
                 this.classList.add('btn-primary');
                 this.disabled = true;
-
                 showNotification(`Request sent to ${name}`, 'success');
             });
         }
     });
 
-    // Groups
     const groupBtns = document.querySelectorAll('.groups-list .btn');
-
     groupBtns.forEach(btn => {
         if (!btn.hasAttribute('data-init')) {
             btn.setAttribute('data-init', 'true');
-
             btn.addEventListener('click', function () {
                 const name = this.closest('.group-item')
                     .querySelector('.post-user').textContent;
-
                 this.innerHTML = '<i class="fas fa-check"></i> Joined';
                 this.classList.remove('btn-outline');
                 this.classList.add('btn-primary');
                 this.disabled = true;
-
                 showNotification(`Joined ${name}`, 'success');
             });
         }
     });
 }
 
-//initialize network page
 function initializeNetworkPage() {
     initializeNetworkFilters();
     initializeConnectButtons();
     initializeMentorshipButtons();
 }
 
-//navs + log in
-loginBtn.addEventListener('click', handleLogin);
-logoutBtn.addEventListener('click', handleLogout);
-
-roleBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        roleBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentRole = btn.getAttribute('data-role');
-    });
-});
-
-navLinks.forEach(link => {
-    link.addEventListener('click', e => {
-        e.preventDefault();
-        const page = e.target.getAttribute('data-page');
-        showPage(page);
-
-        navLinks.forEach(nav => nav.classList.remove('active'));
-        e.target.classList.add('active');
-    });
-});
-
-//hiding club
-function applyRoleBasedUI(role) {
-    // Hide Clubs from navbar for faculty
-    document.querySelectorAll('.nav-link[data-page="clubs"]').forEach(el => {
-        el.style.display = role === 'faculty' ? 'none' : '';
-    });
-
-    // Hide Explore Clubs button (dashboard)
-    const exploreBtn = document.getElementById('exploreClubsBtn');
-    if (exploreBtn) {
-        exploreBtn.style.display = role === 'faculty' ? 'none' : '';
-    }
-
-    // Force-close clubs page if faculty
-    if (role === 'faculty') {
-        const clubsPage = document.getElementById('clubs-page');
-        if (clubsPage) clubsPage.classList.remove('active');
-    }
-}
-
-/* ---------------------- PAGE SWITCHER ---------------------- */
-function showPage(pageId) {
-    pages.forEach(page => page.classList.remove('active'));
-
-    if (pageId === 'dashboard') {
-        if (currentRole === 'student') {
-            document.getElementById('student-dashboard')?.classList.add('active');
-            setTimeout(initializeExistingSkills, 100);
-        } else {
-            document.getElementById('faculty-dashboard')?.classList.add('active');
-        }
-        return;
-    }
-
-    // Handle skill-summary page
-    if (pageId === 'skill-summary') {
-        document.getElementById('skill-summary-page')?.classList.add('active');
-        return;
-    }
-
-    const pageEl = document.getElementById(`${pageId}-page`);
-    if (pageEl) {
-        pageEl.classList.add('active');
-    }
-
-    if (pageId === 'network') {
-        setTimeout(initializeNetworkPage, 100);
-    }
-
-    if (pageId === 'clubs') {
-        setTimeout(() => {
-            initializeJoinClubButtons();
-            updateMyClubsUI();
-        }, 100);
-    }
-
-    if (pageId === 'projects') {
-        setTimeout(pc_onProjectsPageShow, 150);
-    }
-
-    if (pageId === 'events') {
-        setTimeout(initializeEventsPage, 100);
-    }
-}
-
-//login handle
-function handleLogin() {
-    const email = document.getElementById('loginEmail').value;
-    const pass = document.getElementById('loginPassword').value;
-
-    if (!email || !pass) return alert('Please fill in all fields');
-
-    if (email === demoAccounts[currentRole].email &&
-        pass === demoAccounts[currentRole].password) {
-
-        currentUser = demoAccounts[currentRole];
-        showDashboard();
-        showNotification(`Welcome ${currentUser.name}!`, 'success');
-    } else {
-        alert('Invalid email or password.');
-    }
-}
-
-function showDashboard() {
-    mainHeader.classList.remove('hidden');
-    mainFooter.classList.remove('hidden');
-
-    applyRoleBasedUI(currentRole); // role-based navbar + UI
-
-    pages.forEach(p => p.classList.remove('active'));
-    document.getElementById('login-page').classList.remove('active');
-
-    const cfg = ROLE_CONFIG[currentRole];
-
-    document.getElementById(cfg.dashboardId).classList.add('active');
-    document.getElementById(cfg.nameId).textContent = currentUser.name;
-    document.getElementById(cfg.titleId).textContent = currentUser.title;
-
-    navLinks.forEach(n => n.classList.remove('active'));
-    document.querySelector('[data-page="dashboard"]').classList.add('active');
-
-    setTimeout(initializeSkills, 100);
-    
-    // Initialize LinkedIn buttons
-    initializeLinkedInButtons();
-    setTimeout(initializeLinkedInOnDashboardLoad, 150);
-}
-
-function handleLogout() {
-    currentUser = null;
-    mainHeader.classList.add('hidden');
-    mainFooter.classList.add('hidden');
-
-    pages.forEach(p => p.classList.remove('active'));
-    document.getElementById('login-page').classList.add('active');
-
-    document.getElementById('loginEmail').value = '';
-    document.getElementById('loginPassword').value = '';
-    applyRoleBasedUI('student');
-}
-
-//club join leave ui
+/* =========================================================
+   CLUBS PAGE FUNCTIONS
+========================================================= */
 function initializeJoinClubButtons() {
     const buttons = document.querySelectorAll('#allClubsList .btn-outline');
-
     buttons.forEach(btn => {
         if (!btn.hasAttribute("data-joined-init")) {
             btn.setAttribute("data-joined-init", "true");
-
             btn.addEventListener('click', function () {
                 const clubName = this.closest('.club-card-custom')
                     .querySelector('strong').textContent;
-
-                // Add to joined list if not already
                 if (!joinedClubs.includes(clubName)) {
                     joinedClubs.push(clubName);
                     updateMyClubsUI();
                     showNotification(`Joined ${clubName}`, 'success');
                 }
-
-                // Change button state
                 this.textContent = "Joined ✔";
                 this.classList.remove("btn-outline");
                 this.classList.add("btn-primary");
@@ -527,12 +495,10 @@ function initializeJoinClubButtons() {
     });
 }
 
-// Update My Clubs UI & dashboard clubs
 function updateMyClubsUI() {
     const myClubsList = document.getElementById("myClubsList");
     const dashboardClubs = document.getElementById("studentClubs");
 
-    // Clear
     if (myClubsList) myClubsList.innerHTML = "";
     if (dashboardClubs) dashboardClubs.innerHTML = "";
 
@@ -581,25 +547,19 @@ function updateMyClubsUI() {
         }
     });
 
-    // Activate leave buttons
     initializeLeaveButtons();
     updateAllClubsButtons();
 }
 
 function initializeLeaveButtons() {
     const leaveButtons = document.querySelectorAll(".leave-btn");
-
     leaveButtons.forEach(btn => {
         if (!btn.hasAttribute('data-leave-init')) {
             btn.setAttribute('data-leave-init', 'true');
-
             btn.addEventListener("click", function () {
                 const clubName = this.getAttribute("data-club");
                 joinedClubs = joinedClubs.filter(c => c !== clubName);
-
                 showNotification(`Left ${clubName}`, "error");
-
-                // Refresh UI everywhere
                 updateMyClubsUI();
                 updateAllClubsButtons();
             });
@@ -609,11 +569,9 @@ function initializeLeaveButtons() {
 
 function updateAllClubsButtons() {
     const clubCards = document.querySelectorAll("#allClubsList .club-card-custom");
-
     clubCards.forEach(card => {
         const clubName = card.querySelector("strong").textContent;
         const btn = card.querySelector(".btn");
-
         if (joinedClubs.includes(clubName)) {
             btn.textContent = "Joined ✔";
             btn.classList.remove("btn-outline");
@@ -628,7 +586,629 @@ function updateAllClubsButtons() {
     });
 }
 
-//gemini ai enhance btn helpers
+/* =========================================================
+   PROJECT COLLABORATION FUNCTIONS
+========================================================= */
+function pc_initializeDemoContent() {
+    if (pc_projects.length) return;
+    
+    pc_projects = [
+        {
+            id: "demo_1",
+            owner: "Jasmeet Khanwani",
+            title: "Smart Timetable Optimizer",
+            description: "Optimize student timetables using ML and constraints.",
+            github: "https://github.com/jasmeet/timetable-optimizer",
+            skills: ["Python", "Machine Learning", "OR-Tools"],
+            roles: "ML Engineer, Backend Developer",
+            team: ["Rohan Verma"],
+            timeCommitment: "medium"
+        },
+        {
+            id: "demo_2",
+            owner: "Aditi Dube",
+            title: "Campus Events Portal",
+            description: "Events listing & registration platform for university events.",
+            github: "https://github.com/aditi/campus-events",
+            skills: ["React", "Node.js", "MongoDB"],
+            roles: "Frontend Developer, Backend Developer",
+            team: ["Namita Shastri"],
+            timeCommitment: "high"
+        },
+        {
+            id: "demo_3",
+            owner: "Yug Patel",
+            title: "AI-Powered Study Assistant",
+            description: "Chatbot that helps students with course material using NLP.",
+            github: "https://github.com/yug/study-assistant",
+            skills: ["Python", "NLP", "FastAPI"],
+            roles: "AI Engineer, Full Stack Developer",
+            team: [],
+            timeCommitment: "medium"
+        },
+        {
+            id: "demo_4",
+            owner: "Siddhesh Mohite",
+            title: "Smart Attendance System",
+            description: "Facial recognition based attendance system for classrooms.",
+            github: "https://github.com/siddhesh/attendance-system",
+            skills: ["Python", "OpenCV", "React Native"],
+            roles: "Computer Vision Engineer, Mobile Developer",
+            team: ["Daksh Patel"],
+            timeCommitment: "high"
+        }
+    ];
+    
+    pc_requests = [
+        {
+            id: "demo_req_1",
+            projectId: "demo_2",
+            applicantName: "Namita Shastri",
+            github: "https://github.com/namita/react-projects",
+            comment: "I have 2 years of React experience and would love to contribute to the frontend.",
+            skills: ["React", "JavaScript", "CSS", "UI/UX"]
+        },
+        {
+            id: "demo_req_2",
+            projectId: "demo_3",
+            applicantName: "Janak Parmar",
+            github: "https://github.com/janak/python-ml",
+            comment: "I've worked on similar NLP projects before and can help with model training.",
+            skills: ["Python", "TensorFlow", "NLP", "ML"]
+        }
+    ];
+}
+
+function pc_addTestRequests() {
+    const myName = currentUser ? currentUser.name : "You";
+    
+    // Add a test project owned by current user
+    const testProj = {
+        id: "proj_test_" + Date.now(),
+        owner: myName,
+        title: "AI Chatbot for College FAQs",
+        description: "AI chatbot to answer college FAQs using natural language processing.",
+        github: "https://github.com/college/chatbot",
+        skills: ["Python", "NLP", "FastAPI", "React"],
+        roles: "ML Engineer, Frontend Developer",
+        team: [],
+        timeCommitment: "medium"
+    };
+    
+    if (!pc_projects.find(p => p.owner === myName)) {
+        pc_projects.unshift(testProj);
+    }
+    
+    // Add test requests to user's project
+    const userProject = pc_projects.find(p => p.owner === myName);
+    if (userProject) {
+        const r1 = {
+            id: "req_test_01_" + Date.now(),
+            projectId: userProject.id,
+            applicantName: "Saksham Dubey",
+            github: "https://github.com/saksham/ai-projects",
+            comment: "I have ML experience and want to contribute to the NLP part.",
+            skills: ["Python", "TensorFlow", "NLP"]
+        };
+        
+        const r2 = {
+            id: "req_test_02_" + Date.now(),
+            projectId: userProject.id,
+            applicantName: "Garvi Shah",
+            github: "https://github.com/garvi/react-dashboard",
+            comment: "I can help with frontend UI and design system.",
+            skills: ["React", "UI/UX", "JavaScript"]
+        };
+        
+        if (!pc_requests.find(r => r.applicantName === "Saksham Dubey")) pc_requests.push(r1);
+        if (!pc_requests.find(r => r.applicantName === "Garvi Shah")) pc_requests.push(r2);
+    }
+}
+
+function pc_renderProjectFeed() {
+    const container = document.getElementById('projectFeedList');
+    if (!container) return;
+    
+    container.innerHTML = "";
+    const myName = currentUser ? currentUser.name : "You";
+    
+    const others = pc_projects.filter(p => p.owner !== myName);
+    
+    if (others.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px; color: var(--gray);">
+                <i class="fas fa-project-diagram" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.3;"></i>
+                <h4 style="margin-bottom: 10px; color: var(--dark);">No projects available</h4>
+                <p>Be the first to post a project and start collaborating!</p>
+                <button class="btn btn-primary" style="margin-top: 20px;" onclick="document.getElementById('pc_projTitle').focus()">
+                    <i class="fas fa-plus"></i> Create First Project
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    others.forEach(p => {
+        const skills = p.skills.map(skill => 
+            `<span class="skill-tag-small">${skill}</span>`
+        ).join("");
+        
+        const timeCommitment = p.timeCommitment || 'medium';
+        const commitmentText = {
+            'low': '1-5 hrs/week',
+            'medium': '5-10 hrs/week',
+            'high': '10+ hrs/week'
+        }[timeCommitment];
+        
+        container.innerHTML += `
+            <div class="project-card-custom" data-project-id="${p.id}">
+                <div class="project-owner">
+                    <div class="avatar">${p.owner.charAt(0)}</div>
+                    <div class="owner-info">
+                        <div class="owner-name">${p.owner}</div>
+                        <div class="owner-role">Project Owner</div>
+                    </div>
+                    <button class="btn btn-primary pc-apply-btn" 
+                            data-project-id="${p.id}"
+                            ${p.team.includes(currentUser?.name) ? 'disabled' : ''}>
+                        ${p.team.includes(currentUser?.name) ? 'Already Applied ✓' : 'Apply to Join'}
+                    </button>
+                </div>
+                
+                <h4>${p.title}</h4>
+                
+                <div class="project-desc">${p.description}</div>
+                
+                <div class="project-meta-info">
+                    <span><i class="fas fa-users"></i> ${p.team.length} team member(s)</span>
+                    <span><i class="fas fa-clock"></i> ${commitmentText}</span>
+                    <span><i class="fas fa-tasks"></i> ${p.roles.split(',').length} roles needed</span>
+                </div>
+                
+                <div class="skills-container">
+                    <div class="skills-label">Required Skills:</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
+                        ${skills}
+                    </div>
+                </div>
+                
+                <div class="roles-container" style="margin-top: 10px;">
+                    <div style="font-weight: 600; color: var(--dark); font-size: 0.9rem; margin-bottom: 5px;">
+                        Roles Needed:
+                    </div>
+                    <div style="color: var(--gray); font-size: 0.85rem;">
+                        ${p.roles}
+                    </div>
+                </div>
+                
+                ${p.github ? `
+                    <div style="margin-top: 15px;">
+                        <a href="${p.github}" target="_blank" class="btn btn-outline btn-small">
+                            <i class="fab fa-github"></i> View Repository
+                        </a>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+}
+
+function pc_renderIncomingRequests() {
+    const container = document.getElementById('incomingRequestsList');
+    if (!container) return;
+    
+    container.innerHTML = "";
+    
+    const myName = currentUser ? currentUser.name : "You";
+    
+    const mine = pc_requests.filter(r => {
+        const proj = pc_projects.find(p => p.id === r.projectId);
+        return proj && proj.owner === myName;
+    });
+    
+    if (mine.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: var(--gray);">
+                <i class="fas fa-user-plus" style="font-size: 2.5rem; margin-bottom: 15px; opacity: 0.3;"></i>
+                <h4 style="margin-bottom: 10px;">No requests yet</h4>
+                <p>When people apply to join your projects, they'll appear here.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    mine.forEach(r => {
+        const proj = pc_projects.find(p => p.id === r.projectId);
+        const skills = r.skills.map(s => `<span class="skill-tag-small">${s}</span>`).join("");
+        
+        container.innerHTML += `
+            <div class="request-card" data-request-id="${r.id}">
+                <div class="req-top">
+                    <div>
+                        <div class="req-name">${r.applicantName}</div>
+                        <div class="req-project">applied for <strong>${proj.title}</strong></div>
+                    </div>
+                    
+                    <button class="btn btn-outline btn-small pc-analyse-btn" data-request-id="${r.id}">
+                        <i class="fas fa-chart-bar"></i> Analyse
+                    </button>
+                </div>
+                
+                <div class="req-comment">
+                    <i class="fas fa-comment-dots"></i> ${r.comment || "No additional comment provided"}
+                </div>
+                
+                <div class="req-skills-text">
+                    <strong>Skills:</strong>
+                    <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
+                        ${skills}
+                    </div>
+                </div>
+                
+                ${r.github ? `
+                    <a href="${r.github}" target="_blank" class="btn btn-outline btn-small req-github-btn">
+                        <i class="fab fa-github"></i> View GitHub Profile
+                    </a>
+                ` : ''}
+                
+                <div class="req-actions">
+                    <button class="btn btn-primary btn-small pc-accept-btn" data-request-id="${r.id}">
+                        <i class="fas fa-check"></i> Accept
+                    </button>
+                    <button class="btn btn-danger btn-small pc-decline-btn" data-request-id="${r.id}">
+                        <i class="fas fa-times"></i> Decline
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function pc_renderMyProjects() {
+    const container = document.getElementById('myProjectsList');
+    if (!container) return;
+    
+    container.innerHTML = "";
+    const myName = currentUser ? currentUser.name : "You";
+    
+    const mine = pc_projects.filter(p => p.owner === myName);
+    
+    if (mine.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: var(--gray); font-style: italic;">
+                You haven't created any projects yet. Use the form on the right to get started!
+            </div>
+        `;
+        return;
+    }
+    
+    mine.forEach(p => {
+        const skills = p.skills.map(s => `<span class="skill-tag-small">${s}</span>`).join("");
+        const team = p.team.map(m => `<span class="skill-tag-small" style="background: rgba(40, 167, 69, 0.1); color: #28a745;">${m}</span>`).join("");
+        const timeCommitment = p.timeCommitment || 'medium';
+        const commitmentText = {
+            'low': '1-5 hrs/week',
+            'medium': '5-10 hrs/week',
+            'high': '10+ hrs/week'
+        }[timeCommitment];
+        
+        container.innerHTML += `
+            <div class="project-card-custom">
+                <strong>${p.title}</strong>
+                <div style="color: var(--gray); font-size: 0.9rem; margin: 8px 0;">
+                    ${p.description}
+                </div>
+                
+                <div style="margin: 10px 0; display: flex; gap: 15px; font-size: 0.85rem; color: var(--gray);">
+                    <span><i class="fas fa-clock"></i> ${commitmentText}</span>
+                    <span><i class="fas fa-users"></i> ${p.team.length} team members</span>
+                </div>
+                
+                <div style="margin: 10px 0;">
+                    <div style="font-weight: 600; font-size: 0.85rem; color: var(--dark); margin-bottom: 5px;">
+                        Required Skills:
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                        ${skills}
+                    </div>
+                </div>
+                
+                <div style="margin: 10px 0;">
+                    <div style="font-weight: 600; font-size: 0.85rem; color: var(--dark); margin-bottom: 5px;">
+                        Roles Needed:
+                    </div>
+                    <div style="color: var(--gray); font-size: 0.85rem;">
+                        ${p.roles}
+                    </div>
+                </div>
+                
+                ${p.team.length > 0 ? `
+                    <div style="margin: 10px 0;">
+                        <div style="font-weight: 600; font-size: 0.85rem; color: var(--dark); margin-bottom: 5px;">
+                            Team Members (${p.team.length}):
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                            ${team}
+                        </div>
+                    </div>
+                ` : `
+                    <div style="color: var(--gray); font-size: 0.85rem; margin: 10px 0;">
+                        <i class="fas fa-users"></i> No team members yet
+                    </div>
+                `}
+                
+                ${p.github ? `
+                    <a href="${p.github}" target="_blank" class="btn btn-outline btn-small" style="margin-top: 10px;">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                ` : ''}
+            </div>
+        `;
+    });
+}
+
+function pc_onProjectsPageShow() {
+    pc_initializeDemoContent();
+    pc_addTestRequests();
+    
+    pc_renderMyProjects();
+    pc_renderProjectFeed();
+    pc_renderIncomingRequests();
+    
+    // Enable scroll for all containers
+    setTimeout(() => {
+        const scrollableElements = document.querySelectorAll('.projects-page .scrollable-content');
+        scrollableElements.forEach(el => {
+            el.style.overflowY = 'auto';
+        });
+        
+        // Initialize refresh button
+        const refreshBtn = document.getElementById('refreshProjectFeedBtn');
+        if (refreshBtn) {
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+            refreshBtn.disabled = false;
+        }
+    }, 100);
+}
+
+/* =========================================================
+   LINKEDIN FUNCTIONS
+========================================================= */
+function initializeLinkedInButtons() {
+    // Student LinkedIn buttons
+    const studentConnectBtn = document.getElementById('connectStudentLinkedinBtn');
+    const studentViewBtn = document.getElementById('viewStudentLinkedinBtn');
+    
+    if (studentConnectBtn) {
+        studentConnectBtn.addEventListener('click', () => {
+            connectLinkedIn('student');
+        });
+    }
+    
+    if (studentViewBtn) {
+        studentViewBtn.addEventListener('click', () => {
+            viewLinkedInProfile('student');
+        });
+    }
+    
+    // Faculty LinkedIn buttons
+    const facultyConnectBtn = document.getElementById('connectFacultyLinkedinBtn');
+    const facultyViewBtn = document.getElementById('viewFacultyLinkedinBtn');
+    
+    if (facultyConnectBtn) {
+        facultyConnectBtn.addEventListener('click', () => {
+            connectLinkedIn('faculty');
+        });
+    }
+    
+    if (facultyViewBtn) {
+        facultyViewBtn.addEventListener('click', () => {
+            viewLinkedInProfile('faculty');
+        });
+    }
+    
+    updateLinkedInUI('student');
+    updateLinkedInUI('faculty');
+}
+
+function connectLinkedIn(role) {
+    const profileName = role === 'student' 
+        ? currentUser?.name || 'Student User' 
+        : currentUser?.name || 'Faculty Member';
+    
+    const linkedinUrl = prompt(
+        `Enter your LinkedIn profile URL for ${profileName}:\n\nExample: https://www.linkedin.com/in/yourusername`,
+        `https://www.linkedin.com/in/${profileName.toLowerCase().replace(/\s+/g, '-')}`
+    );
+    
+    if (linkedinUrl && linkedinUrl.includes('linkedin.com/in/')) {
+        linkedinProfiles[role] = {
+            connected: true,
+            profileUrl: linkedinUrl,
+            connections: Math.floor(Math.random() * 500) + 100,
+            followers: Math.floor(Math.random() * 1000) + 50,
+            profileData: {
+                headline: role === 'student' ? 'Computer Science Student' : 'AI Research Faculty',
+                location: 'University Campus',
+                joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+            }
+        };
+        
+        updateLinkedInUI(role);
+        showNotification(`${role.charAt(0).toUpperCase() + role.slice(1)} LinkedIn profile connected!`, 'success');
+    } else if (linkedinUrl) {
+        alert('Please enter a valid LinkedIn profile URL (should contain linkedin.com/in/)');
+    }
+}
+
+function viewLinkedInProfile(role) {
+    const profile = linkedinProfiles[role];
+    
+    if (profile.connected && profile.profileUrl) {
+        const profileName = role === 'student' 
+            ? currentUser?.name || 'Student User' 
+            : currentUser?.name || 'Faculty Member';
+        
+        const modalContent = `
+            <div style="text-align: left;">
+                <h3 style="color: #0077B5; margin-bottom: 15px;">
+                    <i class="fab fa-linkedin"></i> LinkedIn Profile
+                </h3>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="font-weight: 600; font-size: 1.1rem; color: #0077B5; margin-bottom: 5px;">
+                        ${profileName}
+                    </div>
+                    <div style="color: var(--gray); margin-bottom: 10px;">
+                        ${profile.profileData.headline}
+                    </div>
+                    <div style="font-size: 0.9rem; color: #666;">
+                        <i class="fas fa-map-marker-alt"></i> ${profile.profileData.location}
+                    </div>
+                </div>
+                
+                <div class="linkedin-stats">
+                    <div class="linkedin-stat">
+                        <div class="linkedin-stat-value">${profile.connections}+</div>
+                        <div class="linkedin-stat-label">Connections</div>
+                    </div>
+                    <div class="linkedin-stat">
+                        <div class="linkedin-stat-value">${profile.followers}</div>
+                        <div class="linkedin-stat-label">Followers</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; font-size: 0.9rem;">
+                    <strong>Profile URL:</strong>
+                    <div class="profile-url" style="word-break: break-all; margin-top: 5px;">
+                        <a href="${profile.profileUrl}" target="_blank">${profile.profileUrl}</a>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        if (confirm(`Open LinkedIn profile for ${profileName}?\n\nURL: ${profile.profileUrl}\n\nClick OK to see profile details`)) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 25px; border-radius: 15px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: #0077B5;">LinkedIn Profile Preview</h3>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray);">&times;</button>
+                    </div>
+                    ${modalContent}
+                    <div style="margin-top: 20px; text-align: right;">
+                        <button onclick="window.open('${profile.profileUrl}', '_blank'); this.closest('.modal-overlay').remove();" style="background: #0077B5; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
+                            Open in New Tab
+                        </button>
+                        <button onclick="this.closest('.modal-overlay').remove()" style="background: var(--gray); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.remove();
+                }
+            });
+        }
+    } else {
+        showNotification('LinkedIn profile not connected yet', 'error');
+    }
+}
+
+function updateLinkedInUI(role) {
+    const profile = linkedinProfiles[role];
+    const statusElement = document.getElementById(`${role}LinkedinStatus`);
+    const connectBtn = document.getElementById(`connect${role.charAt(0).toUpperCase() + role.slice(1)}LinkedinBtn`);
+    const viewBtn = document.getElementById(`view${role.charAt(0).toUpperCase() + role.slice(1)}LinkedinBtn`);
+    
+    if (!statusElement || !connectBtn) return;
+    
+    if (profile.connected) {
+        statusElement.innerHTML = `
+            <span class="linkedin-connected">
+                <i class="fas fa-check-circle"></i> Connected
+            </span>
+            <br>
+            <small style="color: var(--gray);">Last synced: Just now</small>
+        `;
+        connectBtn.style.display = 'none';
+        if (viewBtn) {
+            viewBtn.style.display = 'block';
+        }
+    } else {
+        statusElement.innerHTML = `
+            <span class="linkedin-disconnected">
+                <i class="fas fa-unlink"></i> Not connected
+            </span>
+            <br>
+            <small style="color: var(--gray);">Connect to share your profile</small>
+        `;
+        connectBtn.style.display = 'block';
+        if (viewBtn) {
+            viewBtn.style.display = 'none';
+        }
+    }
+}
+
+function initializeLinkedInOnDashboardLoad() {
+    if (currentRole) {
+        updateLinkedInUI(currentRole);
+    }
+}
+
+/* =========================================================
+   AI ENHANCE FUNCTIONS
+========================================================= */
+async function runAIAnalysis() {
+    const cfg = ROLE_CONFIG[currentRole];
+    const enhanceModal = document.getElementById('enhanceModal');
+    const enhanceContent = document.getElementById('enhanceContent');
+    
+    if (!enhanceModal) {
+        createEnhanceModal();
+        setTimeout(() => runAIAnalysis(), 100);
+        return;
+    }
+    
+    enhanceModal.style.display = 'flex';
+    enhanceContent.innerHTML = `<p style="color:var(--gray)">Analyzing...</p>`;
+
+    const items = [];
+    document.querySelectorAll(`#${cfg.skillListId} .skill-tag`).forEach(tag => {
+        items.push({
+            name: tag.childNodes[0].textContent.trim(),
+            level: tag.dataset.level || 'intermediate'
+        });
+    });
+
+    const aiOutput = await getGeminiSkillSuggestions(items);
+    enhanceContent.innerHTML = `
+        <h4>AI Insights</h4>
+        <div style="line-height:1.6; margin-top:8px;">
+            ${fixAISuggestions(aiOutput)}
+        </div>
+    `;
+}
+
 async function getGeminiSkillSuggestions(skills) {
     try {
         const res = await fetch("http://localhost:3000/ai/skills", {
@@ -636,7 +1216,6 @@ async function getGeminiSkillSuggestions(skills) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ skills })
         });
-
         const data = await res.json();
         if (data.success) {
             return data.suggestions;
@@ -651,32 +1230,22 @@ async function getGeminiSkillSuggestions(skills) {
 
 function fixAISuggestions(text) {
     if (!text) return "";
-
     text = text.replace(/\r\n/g, "\n");
-
     let lines = text.split("\n");
     let html = "";
     let inList = false;
 
     lines.forEach(line => {
         let trimmed = line.trim();
-
-        // STEP 1: Detect bullets first (so italic conversion doesn't break them)
         if (/^[\*\-\•\‣\·]\s+/.test(trimmed)) {
             if (!inList) {
                 html += "<ul>";
                 inList = true;
             }
-            // Remove bullet symbol (*, -, •, etc.)
             let withoutBullet = trimmed.replace(/^[\*\-\•\‣\·]\s+/, "");
-
-            // Convert markdown bold after removing bullet
             withoutBullet = withoutBullet.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-
-            // Convert markdown italic (*text* or _text_)
             withoutBullet = withoutBullet.replace(/_(.*?)_/g, "<em>$1</em>");
             withoutBullet = withoutBullet.replace(/\*(.*?)\*/g, "<em>$1</em>");
-
             html += `<li>${withoutBullet}</li>`;
         }
         else if (trimmed === "") {
@@ -691,47 +1260,16 @@ function fixAISuggestions(text) {
                 html += "</ul>";
                 inList = false;
             }
-
             let clean = trimmed;
-
-            // Convert bold & italic in non-bullet text
             clean = clean.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
             clean = clean.replace(/_(.*?)_/g, "<em>$1</em>");
             clean = clean.replace(/\*(.*?)\*/g, "<em>$1</em>");
-
             html += `<p>${clean}</p>`;
         }
     });
 
     if (inList) html += "</ul>";
-
     return html;
-}
-
-//enhance btn model
-function createEnhanceModal() {
-    const modalHTML = `
-        <div class="modal-overlay" id="enhanceModal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>AI Skill Enhancement Suggestions</h3>
-                    <button class="modal-close" id="closeEnhanceModal">&times;</button>
-                </div>
-                <div class="modal-body" id="enhanceContent">
-                    <p style="color: var(--gray);">Analyzing your skills...</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-outline" id="closeEnhanceBtn">Close</button>
-                </div>
-            </div>
-        </div>
-    `;
-    // prevent duplicate
-    if (!document.getElementById('enhanceModal')) {
-        document.body.insertAdjacentHTML("beforeend", modalHTML);
-        document.getElementById("closeEnhanceModal").addEventListener("click", closeEnhanceModal);
-        document.getElementById("closeEnhanceBtn").addEventListener("click", closeEnhanceModal);
-    }
 }
 
 function closeEnhanceModal() {
@@ -739,9 +1277,153 @@ function closeEnhanceModal() {
     if (modal) modal.style.display = "none";
 }
 
-//example profile and demo btns
-document.getElementById('addStudentSkillBtn')?.addEventListener('click', openSkillModal);
+/* =========================================================
+   PAGE NAVIGATION
+========================================================= */
+function showPage(pageId) {
+    pages.forEach(page => page.classList.remove('active'));
 
+    if (pageId === 'dashboard') {
+        if (currentRole === 'student') {
+            document.getElementById('student-dashboard')?.classList.add('active');
+            setTimeout(initializeExistingSkills, 100);
+        } else {
+            document.getElementById('faculty-dashboard')?.classList.add('active');
+        }
+        return;
+    }
+
+    if (pageId === 'skill-summary') {
+        document.getElementById('skill-summary-page')?.classList.add('active');
+        return;
+    }
+
+    const pageEl = document.getElementById(`${pageId}-page`);
+    if (pageEl) {
+        pageEl.classList.add('active');
+    }
+
+    if (pageId === 'network') {
+        setTimeout(initializeNetworkPage, 100);
+    }
+
+    if (pageId === 'clubs') {
+        setTimeout(() => {
+            initializeJoinClubButtons();
+            updateMyClubsUI();
+        }, 100);
+    }
+
+    if (pageId === 'projects') {
+        setTimeout(pc_onProjectsPageShow, 150);
+    }
+
+    if (pageId === 'events') {
+        setTimeout(initializeEventsPage, 100);
+    }
+}
+
+function applyRoleBasedUI(role) {
+    document.querySelectorAll('.nav-link[data-page="clubs"]').forEach(el => {
+        el.style.display = role === 'faculty' ? 'none' : '';
+    });
+
+    const exploreBtn = document.getElementById('exploreClubsBtn');
+    if (exploreBtn) {
+        exploreBtn.style.display = role === 'faculty' ? 'none' : '';
+    }
+
+    if (role === 'faculty') {
+        const clubsPage = document.getElementById('clubs-page');
+        if (clubsPage) clubsPage.classList.remove('active');
+    }
+}
+
+/* =========================================================
+   LOGIN/LOGOUT
+========================================================= */
+function handleLogin() {
+    const email = document.getElementById('loginEmail').value;
+    const pass = document.getElementById('loginPassword').value;
+
+    if (!email || !pass) return alert('Please fill in all fields');
+
+    if (email === demoAccounts[currentRole].email &&
+        pass === demoAccounts[currentRole].password) {
+
+        currentUser = demoAccounts[currentRole];
+        showDashboard();
+        showNotification(`Welcome ${currentUser.name}!`, 'success');
+    } else {
+        alert('Invalid email or password.');
+    }
+}
+
+function showDashboard() {
+    mainHeader.classList.remove('hidden');
+    mainFooter.classList.remove('hidden');
+    applyRoleBasedUI(currentRole);
+    pages.forEach(p => p.classList.remove('active'));
+    document.getElementById('login-page').classList.remove('active');
+
+    const cfg = ROLE_CONFIG[currentRole];
+    document.getElementById(cfg.dashboardId).classList.add('active');
+    document.getElementById(cfg.nameId).textContent = currentUser.name;
+    document.getElementById(cfg.titleId).textContent = currentUser.title;
+
+    navLinks.forEach(n => n.classList.remove('active'));
+    document.querySelector('[data-page="dashboard"]').classList.add('active');
+
+    setTimeout(initializeSkills, 100);
+    initializeLinkedInButtons();
+    setTimeout(initializeLinkedInOnDashboardLoad, 150);
+}
+
+function handleLogout() {
+    currentUser = null;
+    mainHeader.classList.add('hidden');
+    mainFooter.classList.add('hidden');
+    pages.forEach(p => p.classList.remove('active'));
+    document.getElementById('login-page').classList.add('active');
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+    applyRoleBasedUI('student');
+}
+
+/* =========================================================
+   EVENT LISTENERS
+========================================================= */
+// Login/Logout
+loginBtn.addEventListener('click', handleLogin);
+logoutBtn.addEventListener('click', handleLogout);
+
+// Role selection
+roleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        roleBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentRole = btn.getAttribute('data-role');
+    });
+});
+
+// Navigation
+navLinks.forEach(link => {
+    link.addEventListener('click', e => {
+        e.preventDefault();
+        const page = e.target.getAttribute('data-page');
+        showPage(page);
+        navLinks.forEach(nav => nav.classList.remove('active'));
+        e.target.classList.add('active');
+    });
+});
+
+// Skill buttons
+Object.values(ROLE_CONFIG).forEach(cfg => {
+    document.getElementById(cfg.addSkillBtnId)?.addEventListener('click', openSkillModal);
+    document.getElementById(cfg.aiBtnId)?.addEventListener('click', runAIAnalysis);
+});
+
+// Profile edit buttons
 document.getElementById('editStudentProfileBtn')?.addEventListener('click', () => {
     if (!currentUser) {
         showNotification('Please login first', 'error');
@@ -759,207 +1441,62 @@ document.getElementById('editStudentProfileBtn')?.addEventListener('click', () =
     }
 });
 
+document.getElementById('editFacultyProfileBtn')?.addEventListener('click', function () {
+    if (!currentUser) {
+        showNotification('Please login first', 'error');
+        return;
+    }
+
+    const name = prompt('Enter your name:', currentUser.name);
+    if (name) {
+        currentUser.name = name;
+        document.getElementById('facultyName').textContent = name;
+    }
+
+    const title = prompt('Enter your title:', currentUser.title);
+    if (title) {
+        currentUser.title = title;
+        document.getElementById('facultyTitle').textContent = title;
+    }
+});
+
+// Connect GitHub
 document.getElementById('connectStudentGithubBtn')?.addEventListener('click', () => {
     alert('GitHub integration would be implemented here. For demo purposes, sample data is shown.');
 });
 
+// Explore Clubs
 document.getElementById('exploreClubsBtn')?.addEventListener('click', () => {
     showPage('clubs');
     navLinks.forEach(nav => nav.classList.remove('active'));
     document.querySelector('[data-page="clubs"]').classList.add('active');
 });
 
-// Click outside modals to close
-document.addEventListener('click', (e) => {
-    const skillModal = document.getElementById('skillModal');
-    if (skillModal && e.target === skillModal) closeSkillModal();
-});
-
-// Simple accept/decline for generic connection requests (not project)
+// Network request functions
 function acceptRequest(button) {
     const requestItem = button.closest('.request-item');
     const name = requestItem.querySelector('.post-user').textContent;
-
     requestItem.style.opacity = "0";
     setTimeout(() => requestItem.remove(), 300);
-
     showNotification(`You are now connected with ${name}`, 'success');
 }
 
 function declineRequest(button) {
     const requestItem = button.closest('.request-item');
     const name = requestItem.querySelector('.post-user').textContent;
-
     requestItem.style.opacity = "0";
     setTimeout(() => requestItem.remove(), 300);
-
     showNotification(`You declined ${name}'s request`, 'error');
 }
 
-//project collab page
-// In-memory store
-let pc_projects = [];
-let pc_requests = [];
-
-//incroming request
-function pc_renderIncomingRequests() {
-    const container = document.getElementById('incomingRequestsList');
-    if (!container) return;
-    container.innerHTML = "";
-
-    const myName = currentUser ? currentUser.name : "You";
-
-    const mine = pc_requests.filter(r => {
-        const proj = pc_projects.find(p => p.id === r.projectId);
-        return proj && proj.owner === myName;
-    });
-
-    if (mine.length === 0) {
-        container.innerHTML = `<div class="no-requests">No incoming requests yet.</div>`;
-        return;
-    }
-
-    mine.forEach(r => {
-        const proj = pc_projects.find(p => p.id === r.projectId);
-
-        container.innerHTML += `
-        <div class="request-card clean-request-card" data-request-id="${r.id}">
-            
-            <div class="req-top">
-                <div>
-                    <div class="req-name">${r.applicantName}</div>
-                    <div class="req-project">applied for <strong>${proj.title}</strong></div>
-                </div>
-
-                <button class="btn btn-outline btn-small pc-analyse-btn" data-request-id="${r.id}">
-                    Analyse Skill
-                </button>
-            </div>
-
-            <div class="req-comment">${r.comment || ""}</div>
-
-            <div class="req-skills-text">
-                <strong>Skills:</strong> ${r.skills.join(", ")}
-            </div>
-
-            <a href="${r.github}" target="_blank" class="btn btn-outline btn-small req-github-btn">
-                GitHub
-            </a>
-
-            <div class="req-actions">
-                <button class="btn btn-primary btn-small pc-accept-btn" data-request-id="${r.id}">
-                    Accept
-                </button>
-                <button class="btn btn-danger btn-small pc-decline-btn" data-request-id="${r.id}">
-                    Decline
-                </button>
-            </div>
-
-        </div>
-        `;
-    });
-}
-
-//own projects
-function pc_renderMyProjects() {
-    const container = document.getElementById('myProjectsList');
-    if (!container) return;
-
-    container.innerHTML = "";
-    const myName = currentUser ? currentUser.name : "You";
-
-    const mine = pc_projects.filter(p => p.owner === myName);
-
-    if (mine.length === 0) {
-        container.innerHTML = `
-        <div class="project-card-custom no-projects-msg" style="color:var(--gray); padding:12px;">
-            You haven't posted any projects yet. Use the form on the right to add a project.
-        </div>`;
-        return;
-    }
-
-    mine.forEach(p => {
-        const team = (p.team || []).map(m => `<span class="skill-tag">${m}</span>`).join("");
-
-        container.innerHTML += `
-        <div class="project-card-custom">
-            <strong>${p.title}</strong>
-            <div style="color: var(--gray); font-size:0.9rem; margin-top:6px;">
-                ${p.description}
-            </div>
-
-            <div style="margin-top:10px;">
-                <strong>Skills:</strong> ${p.skills.join(", ")}
-            </div>
-
-            <div style="margin-top:8px;">
-                <strong>Roles Needed:</strong> ${p.roles || "None"}
-            </div>
-
-            <div style="margin-top:8px;">
-                <strong>Team:</strong> ${team || '<span style="color:var(--gray)">No members yet</span>'}
-            </div>
-
-            ${p.github ? `
-            <div style="margin-top:8px;">
-                <a href="${p.github}" class="btn btn-outline btn-small" target="_blank">GitHub</a>
-            </div>` : ""}
-        </div>
-        `;
-    });
-}
-
-//projcet feed list
-function pc_renderProjectFeed() {
-    const container = document.getElementById('projectFeedList');
-    if (!container) return;
-
-    container.innerHTML = "";
-    const myName = currentUser ? currentUser.name : "You";
-
-    const others = pc_projects.filter(p => p.owner !== myName);
-
-    if (others.length === 0) {
-        container.innerHTML =
-            `<div class="project-card-custom" style="color:var(--gray);">No projects posted by others yet.</div>`;
-        return;
-    }
-
-    others.forEach(p => {
-        container.innerHTML += `
-        <div class="project-card-custom">
-            <div class="project-owner">
-                <div class="avatar">${p.owner.charAt(0)}</div>
-                <div style="flex:1;">
-                    <div style="font-weight:600;">${p.title}</div>
-                    <div style="color:var(--gray); font-size:0.9rem;">by ${p.owner}</div>
-                </div>
-                <button class="btn btn-primary pc-apply-btn" data-project-id="${p.id}">
-                    Apply to Join
-                </button>
-            </div>
-
-            <div style="color: var(--gray); margin-top:8px;">${p.description}</div>
-
-            <div style="margin-top:8px;">
-                <strong>Skills:</strong> ${p.skills.join(", ")}
-            </div>
-
-            <div style="margin-top:8px;">
-                <strong>Roles:</strong> ${p.roles || "None"}
-            </div>
-        </div>
-        `;
-    });
-}
-
-//posting a projcet
+// Project creation
 document.getElementById('pc_postProjectBtn')?.addEventListener('click', () => {
-    const title = pc_projTitle.value.trim();
-    const desc = pc_projDesc.value.trim();
-    const repo = pc_projGithub.value.trim();
-    const skills = pc_projSkills.value.trim().split(",").map(s => s.trim()).filter(Boolean);
-    const roles = pc_projRoles.value.trim();
+    const title = document.getElementById('pc_projTitle').value.trim();
+    const desc = document.getElementById('pc_projDesc').value.trim();
+    const repo = document.getElementById('pc_projGithub').value.trim();
+    const skills = document.getElementById('pc_projSkills').value.trim().split(",").map(s => s.trim()).filter(Boolean);
+    const roles = document.getElementById('pc_projRoles').value.trim();
+    const timeCommitment = document.getElementById('pc_projTimeCommitment').value;
 
     if (!title || !desc) {
         showNotification("Please enter project title and description", "error");
@@ -974,66 +1511,67 @@ document.getElementById('pc_postProjectBtn')?.addEventListener('click', () => {
         github: repo,
         skills,
         roles,
-        team: []
+        team: [],
+        timeCommitment: timeCommitment || 'medium'
     };
 
     pc_projects.unshift(newProj);
-
     pc_renderProjectFeed();
     pc_renderMyProjects();
     pc_renderIncomingRequests();
-
     showNotification("Project posted!", "success");
 
-    pc_projTitle.value = "";
-    pc_projDesc.value = "";
-    pc_projGithub.value = "";
-    pc_projSkills.value = "";
-    pc_projRoles.value = "";
+    document.getElementById('pc_projTitle').value = "";
+    document.getElementById('pc_projDesc').value = "";
+    document.getElementById('pc_projGithub').value = "";
+    document.getElementById('pc_projSkills').value = "";
+    document.getElementById('pc_projRoles').value = "";
+    document.getElementById('pc_projTimeCommitment').value = "";
 });
 
-//join btn
-document.addEventListener('click', (e) => {
+// Apply to project event delegation
+document.addEventListener('click', function(e) {
     if (e.target.closest('.pc-apply-btn')) {
         const btn = e.target.closest('.pc-apply-btn');
         const projId = btn.getAttribute('data-project-id');
-
+        
         if (!currentUser) {
-            showNotification("Login to apply", "error");
+            showNotification("Please login to apply", "error");
             return;
         }
-
+        
         const name = currentUser.name;
-        const github = prompt("Your GitHub link?", "");
-        const comment = prompt("How will you contribute?", "");
+        const github = prompt("Your GitHub profile URL:", "https://github.com/yourusername");
+        const comment = prompt("Why do you want to join this project? What can you contribute?", "");
         const skills = (prompt("Your skills (comma separated):", "") || "")
             .split(",").map(s => s.trim()).filter(Boolean);
-
+        
+        if (!github || !comment) {
+            showNotification("Application cancelled", "error");
+            return;
+        }
+        
         const req = {
             id: "req_" + Date.now(),
             projectId: projId,
             applicantName: name,
-            github,
-            comment,
-            skills
+            github: github,
+            comment: comment,
+            skills: skills
         };
-
+        
         pc_requests.unshift(req);
-
-        btn.innerHTML = "Requested ✓";
+        btn.innerHTML = '<i class="fas fa-check"></i> Applied';
         btn.classList.remove("btn-primary");
         btn.classList.add("btn-outline");
         btn.disabled = true;
-
+        
         pc_renderIncomingRequests();
         pc_renderMyProjects();
-
-        showNotification("Request sent!", "success");
+        showNotification("Application sent successfully!", "success");
     }
-});
-
-document.addEventListener('click', (e) => {
-    // ACCEPT
+    
+    // Accept request
     if (e.target.closest('.pc-accept-btn')) {
         const id = e.target.getAttribute('data-request-id');
         const req = pc_requests.find(r => r.id === id);
@@ -1049,28 +1587,108 @@ document.addEventListener('click', (e) => {
         showNotification(`${req.applicantName} added to team!`, "success");
     }
 
-    // DECLINE
+    // Decline request
     if (e.target.closest('.pc-decline-btn')) {
         const id = e.target.getAttribute('data-request-id');
         pc_requests = pc_requests.filter(r => r.id !== id);
-
         pc_renderMyProjects();
         pc_renderIncomingRequests();
-
         showNotification("Request declined", "error");
     }
-
-    //analyse bug fixing
+    
+    // Analyse request
     if (e.target.closest('.pc-analyse-btn')) {
         const id = e.target.closest('.pc-analyse-btn').getAttribute('data-request-id');
         const req = pc_requests.find(r => r.id === id);
         if (!req) return;
-
         pc_openAnalyseModal(req);
     }
 });
 
-//analyse button model functionlity
+// Faculty action buttons
+document.addEventListener('click', function (e) {
+    // Project approval
+    if (e.target.closest('.approve-project-btn')) {
+        const projectId = e.target.closest('.approve-project-btn').getAttribute('data-project-id');
+        const projectCard = e.target.closest('.project-card-custom');
+
+        projectCard.querySelector('.project-status').textContent = 'Approved';
+        projectCard.querySelector('.project-status').className = 'project-status status-approved';
+
+        const actionButtons = projectCard.querySelector('.action-buttons');
+        actionButtons.innerHTML = `
+            <button class="btn btn-primary btn-small view-project-btn" data-project-id="${projectId}">
+                <i class="fas fa-eye"></i> View Details
+            </button>
+            <button class="btn btn-outline btn-small message-student-btn" data-student="Student Name">
+                <i class="fas fa-comment"></i> Message
+            </button>
+        `;
+
+        showNotification('Project approved successfully!', 'success');
+    }
+
+    // Project rejection
+    if (e.target.closest('.reject-project-btn')) {
+        const projectId = e.target.closest('.reject-project-btn').getAttribute('data-project-id');
+        const projectCard = e.target.closest('.project-card-custom');
+
+        projectCard.querySelector('.project-status').textContent = 'Rejected';
+        projectCard.querySelector('.project-status').className = 'project-status status-rejected';
+
+        const actionButtons = projectCard.querySelector('.action-buttons');
+        actionButtons.innerHTML = `
+            <button class="btn btn-primary btn-small view-project-btn" data-project-id="${projectId}">
+                <i class="fas fa-eye"></i> View Details
+            </button>
+        `;
+
+        showNotification('Project rejected', 'error');
+    }
+
+    // Collaboration request acceptance
+    if (e.target.closest('.accept-collab-btn')) {
+        const requestId = e.target.closest('.accept-collab-btn').getAttribute('data-request-id');
+        const requestCard = e.target.closest('.collaboration-request');
+
+        requestCard.style.borderLeftColor = '#28a745';
+        requestCard.querySelector('.action-buttons').innerHTML = `
+            <span style="color: var(--success); font-weight: 600;">
+                <i class="fas fa-check"></i> Collaboration Accepted
+            </span>
+        `;
+
+        showNotification('Collaboration request accepted!', 'success');
+    }
+
+    // Collaboration request decline
+    if (e.target.closest('.decline-collab-btn')) {
+        const requestId = e.target.closest('.decline-collab-btn').getAttribute('data-request-id');
+        const requestCard = e.target.closest('.collaboration-request');
+
+        requestCard.style.opacity = '0.5';
+        setTimeout(() => {
+            requestCard.remove();
+        }, 500);
+
+        showNotification('Collaboration request declined', 'error');
+    }
+
+    // View project details
+    if (e.target.closest('.view-project-btn')) {
+        const projectId = e.target.closest('.view-project-btn').getAttribute('data-project-id');
+        alert(`Viewing details for project ID: ${projectId}`);
+    }
+});
+
+// Analyse modal
+document.getElementById('pc_closeAnalyseModal')?.addEventListener('click', () => {
+    document.getElementById('pc_analyseModal').style.display = 'none';
+});
+document.getElementById('pc_closeAnalyseBtn')?.addEventListener('click', () => {
+    document.getElementById('pc_analyseModal').style.display = 'none';
+});
+
 function pc_openAnalyseModal(req) {
     const modal = document.getElementById('pc_analyseModal');
     const content = document.getElementById('pc_analyseContent');
@@ -1116,681 +1734,8 @@ function pc_openAnalyseModal(req) {
         });
 }
 
-document.getElementById('pc_closeAnalyseModal')?.addEventListener('click', () => {
-    document.getElementById('pc_analyseModal').style.display = 'none';
-});
-document.getElementById('pc_closeAnalyseBtn')?.addEventListener('click', () => {
-    document.getElementById('pc_analyseModal').style.display = 'none';
-});
-
-//example data
-function pc_initializeDemoContent() {
-    if (pc_projects.length) return;
-
-    pc_projects = [
-        {
-            id: "demo_1",
-            owner: "Jasmeet Khanwani",
-            title: "Smart Timetable Optimizer",
-            description: "Optimize student timetables using ML and constraints.",
-            github: "",
-            skills: ["Python", "OR-Tools"],
-            roles: "ML Engineer",
-            team: []
-        },
-        {
-            id: "demo_2",
-            owner: "Aditi Dube",
-            title: "Campus Events Portal",
-            description: "Events listing & registration platform.",
-            github: "",
-            skills: ["React", "Node.js"],
-            roles: "Frontend / Backend",
-            team: []
-        }
-    ];
-
-    pc_requests = [
-        {
-            id: "demo_req_1",
-            projectId: "demo_2",
-            applicantName: "Namita Shastri",
-            github: "https://github.com/example/alex",
-            comment: "I can help with frontend UI.",
-            skills: ["React", "Firebase"]
-        }
-    ];
-}
-
-function pc_addTestRequests() {
-    const myName = currentUser ? currentUser.name : "You";
-
-    const testProj = {
-        id: "proj_test",
-        owner: myName,
-        title: "AI Chatbot for College",
-        description: "AI chatbot to answer college FAQs.",
-        github: "https://github.com/college/chatbot",
-        skills: ["Python", "NLP"],
-        roles: "ML Engineer",
-        team: []
-    };
-
-    if (!pc_projects.find(p => p.id === "proj_test")) {
-        pc_projects.unshift(testProj);
-    }
-
-    const r1 = {
-        id: "req_test_01",
-        projectId: "proj_test",
-        applicantName: "Saksham Dubey",
-        github: "https://github.com/rohan/ai-projects",
-        comment: "I have ML experience and want to contribute.",
-        skills: ["Python", "TensorFlow"]
-    };
-
-    const r2 = {
-        id: "req_test_02",
-        projectId: "proj_test",
-        applicantName: "Janak Parmar",
-        github: "https://github.com/aisha/react-dashboard",
-        comment: "I can help with frontend UI and design.",
-        skills: ["React", "UI/UX"]
-    };
-
-    if (!pc_requests.find(r => r.id === "req_test_01")) pc_requests.push(r1);
-    if (!pc_requests.find(r => r.id === "req_test_02")) pc_requests.push(r2);
-}
-
-function pc_onProjectsPageShow() {
-    pc_initializeDemoContent();
-    pc_addTestRequests();
-
-    pc_renderMyProjects();
-    pc_renderProjectFeed();
-    pc_renderIncomingRequests();
-}
-
-// Activate when Projects page opens
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('projects-page')?.classList.contains('active')) {
-        pc_onProjectsPageShow();
-    }
-});
-
-document.querySelectorAll('.nav-link').forEach(nav => {
-    nav.addEventListener('click', e => {
-        const page = e.target.getAttribute('data-page');
-        if (page === 'projects') {
-            setTimeout(pc_onProjectsPageShow, 150);
-        }
-    });
-});
-
-//forcing skill buttons to work on loading of page
-window.addEventListener("load", () => {
-    console.log("INIT: Creating modals...");
-
-    // Prevent multiple insertion, create if missing
-    if (!document.getElementById("skillModal")) {
-        console.log("Creating Skill Modal");
-        createSkillModal();
-    }
-
-    if (!document.getElementById("enhanceModal")) {
-        console.log("Creating Enhance Modal");
-        createEnhanceModal();
-    }
-
-    // Attach modal closing support
-    initializeExistingSkills();
-});
-
-// Faculty-specific event handlers
-document.getElementById('editFacultyProfileBtn')?.addEventListener('click', function () {
-    if (!currentUser) {
-        showNotification('Please login first', 'error');
-        return;
-    }
-
-    const name = prompt('Enter your name:', currentUser.name);
-    if (name) {
-        currentUser.name = name;
-        document.getElementById('facultyName').textContent = name;
-    }
-
-    const title = prompt('Enter your title:', currentUser.title);
-    if (title) {
-        currentUser.title = title;
-        document.getElementById('facultyTitle').textContent = title;
-    }
-});
-
-// Faculty action buttons event delegation
-document.addEventListener('click', function (e) {
-    // Project approval
-    if (e.target.closest('.approve-project-btn')) {
-        const projectId = e.target.closest('.approve-project-btn').getAttribute('data-project-id');
-        const projectCard = e.target.closest('.project-card-custom');
-
-        projectCard.querySelector('.project-status').textContent = 'Approved';
-        projectCard.querySelector('.project-status').className = 'project-status status-approved';
-
-        // Replace approval buttons with view/message buttons
-        const actionButtons = projectCard.querySelector('.action-buttons');
-        actionButtons.innerHTML = `
-            <button class="btn btn-primary btn-small view-project-btn" data-project-id="${projectId}">
-                <i class="fas fa-eye"></i> View Details
-            </button>
-            <button class="btn btn-outline btn-small message-student-btn" data-student="Student Name">
-                <i class="fas fa-comment"></i> Message
-            </button>
-        `;
-
-        showNotification('Project approved successfully!', 'success');
-    }
-
-    // Project rejection
-    if (e.target.closest('.reject-project-btn')) {
-        const projectId = e.target.closest('.reject-project-btn').getAttribute('data-project-id');
-        const projectCard = e.target.closest('.project-card-custom');
-
-        projectCard.querySelector('.project-status').textContent = 'Rejected';
-        projectCard.querySelector('.project-status').className = 'project-status status-rejected';
-
-        // Replace rejection buttons with view button only
-        const actionButtons = projectCard.querySelector('.action-buttons');
-        actionButtons.innerHTML = `
-            <button class="btn btn-primary btn-small view-project-btn" data-project-id="${projectId}">
-                <i class="fas fa-eye"></i> View Details
-            </button>
-        `;
-
-        showNotification('Project rejected', 'error');
-    }
-
-    // Collaboration request acceptance
-    if (e.target.closest('.accept-collab-btn')) {
-        const requestId = e.target.closest('.accept-collab-btn').getAttribute('data-request-id');
-        const requestCard = e.target.closest('.collaboration-request');
-
-        // Update UI
-        requestCard.style.borderLeftColor = '#28a745';
-        requestCard.querySelector('.action-buttons').innerHTML = `
-            <span style="color: var(--success); font-weight: 600;">
-                <i class="fas fa-check"></i> Collaboration Accepted
-            </span>
-        `;
-
-        showNotification('Collaboration request accepted!', 'success');
-    }
-
-    // Collaboration request decline
-    if (e.target.closest('.decline-collab-btn')) {
-        const requestId = e.target.closest('.decline-collab-btn').getAttribute('data-request-id');
-        const requestCard = e.target.closest('.collaboration-request');
-
-        // Fade out and remove
-        requestCard.style.opacity = '0.5';
-        setTimeout(() => {
-            requestCard.remove();
-        }, 500);
-
-        showNotification('Collaboration request declined', 'error');
-    }
-
-    // View project details
-    if (e.target.closest('.view-project-btn')) {
-        const projectId = e.target.closest('.view-project-btn').getAttribute('data-project-id');
-        alert(`Viewing details for project ID: ${projectId}`);
-    }
-
-    // Message student/author
-    if (e.target.closest('.message-student-btn') || e.target.closest('.message-author-btn')) {
-        const name = e.target.closest('button').getAttribute('data-student') ||
-            e.target.closest('button').getAttribute('data-author');
-        alert(`Opening messaging interface with ${name}`);
-    }
-});
-
-//generalization common functions
-/* =========================================================
-   UNIFIED ROLE CONFIGURATION
-========================================================= */
-const ROLE_CONFIG = {
-    student: {
-        dashboardId: 'student-dashboard',
-        nameId: 'studentName',
-        titleId: 'studentTitle',
-        skillListId: 'studentSkillsList',
-        skillCountId: 'studentSkills',
-        addSkillBtnId: 'addStudentSkillBtn',
-        aiBtnId: 'enhanceSkillBtn',
-        modalAddTitle: 'Add New Skill',
-        modalAddBtn: 'Add Skill',
-        defaultCategory: 'programming'
-    },
-    faculty: {
-        dashboardId: 'faculty-dashboard',
-        nameId: 'facultyName',
-        titleId: 'facultyTitle',
-        skillListId: 'facultyResearchAreas',
-        skillCountId: null,
-        addSkillBtnId: 'addResearchAreaBtn',
-        aiBtnId: 'analyzeResearchBtn',
-        modalAddTitle: 'Add Research Area',
-        modalAddBtn: 'Add Research Area',
-        defaultCategory: 'research'
-    }
-};
-
-/* =========================================================
-   SKILL INITIALIZER (FIXES FACULTY CLICK BUG)
-========================================================= */
-function initializeSkills() {
-    const cfg = ROLE_CONFIG[currentRole];
-    const list = document.getElementById(cfg.skillListId);
-    if (!list) return;
-
-    list.querySelectorAll('.skill-tag').forEach(skill => {
-        if (!skill.dataset.bound) {
-            skill.dataset.bound = "true";
-            skill.addEventListener('click', e => {
-                e.stopPropagation();
-                openEditSkillModal(skill);
-            });
-        }
-    });
-}
-
-/* =========================================================
-   ROLE-AWARE SKILL MODAL
-========================================================= */
-function openSkillModal() {
-    const cfg = ROLE_CONFIG[currentRole];
-    const modalTitle = document.getElementById('modalTitle');
-    const saveSkillBtn = document.getElementById('saveSkillBtn');
-    const deleteSection = document.getElementById('deleteSection');
-    const skillName = document.getElementById('skillName');
-    const skillLevel = document.getElementById('skillLevel');
-    const skillCategory = document.getElementById('skillCategory');
-    const skillModal = document.getElementById('skillModal');
-
-    if (!skillModal) {
-        createSkillModal();
-        // Wait for modal to be created
-        setTimeout(() => openSkillModal(), 100);
-        return;
-    }
-
-    editingSkill = null;
-
-    modalTitle.textContent = cfg.modalAddTitle;
-    saveSkillBtn.textContent = cfg.modalAddBtn;
-    deleteSection.style.display = 'none';
-
-    skillName.value = '';
-    skillLevel.value = 'intermediate';
-    skillCategory.value = cfg.defaultCategory;
-
-    updateSkillPreview();
-    skillModal.style.display = 'flex';
-}
-
-/* =========================================================
-   ROLE-AWARE SAVE SKILL
-========================================================= */
-function saveSkill() {
-    const cfg = ROLE_CONFIG[currentRole];
-    const skillName = document.getElementById('skillName');
-    const skillLevel = document.getElementById('skillLevel');
-    const skillCategory = document.getElementById('skillCategory');
-
-    const name = skillName.value.trim();
-    const level = skillLevel.value;
-    const category = skillCategory.value;
-
-    if (!name) return alert('Enter a skill name');
-
-    if (editingSkill) {
-        editingSkill.innerHTML = `
-            ${name}
-            <span class="skill-level-badge">${level.charAt(0).toUpperCase() + level.slice(1)}</span>
-        `;
-        editingSkill.dataset.level = level;
-        editingSkill.dataset.category = category;
-        showNotification('Skill updated!', 'success');
-    } else {
-        const skill = document.createElement('span');
-        skill.className = 'skill-tag';
-        skill.dataset.level = level;
-        skill.dataset.category = category;
-        skill.innerHTML = `
-            ${name}
-            <span class="skill-level-badge">${level.charAt(0).toUpperCase() + level.slice(1)}</span>
-        `;
-
-        document.getElementById(cfg.skillListId).appendChild(skill);
-
-        if (cfg.skillCountId) {
-            const count = document.getElementById(cfg.skillCountId);
-            count.textContent = parseInt(count.textContent) + 1;
-        }
-
-        showNotification('Skill added!', 'success');
-    }
-
-    closeSkillModal();
-    initializeSkills();
-}
-
-/* =========================================================
-   UNIFIED AI ANALYSIS (STUDENT + FACULTY)
-========================================================= */
-async function runAIAnalysis() {
-    const cfg = ROLE_CONFIG[currentRole];
-    const enhanceModal = document.getElementById('enhanceModal');
-    const enhanceContent = document.getElementById('enhanceContent');
-    
-    if (!enhanceModal) {
-        createEnhanceModal();
-        setTimeout(() => runAIAnalysis(), 100);
-        return;
-    }
-    
-    enhanceModal.style.display = 'flex';
-    enhanceContent.innerHTML = `<p style="color:var(--gray)">Analyzing...</p>`;
-
-    const items = [];
-    document.querySelectorAll(`#${cfg.skillListId} .skill-tag`).forEach(tag => {
-        items.push({
-            name: tag.childNodes[0].textContent.trim(),
-            level: tag.dataset.level || 'intermediate'
-        });
-    });
-
-    const aiOutput = await getGeminiSkillSuggestions(items);
-    enhanceContent.innerHTML = `
-        <h4>AI Insights</h4>
-        <div style="line-height:1.6; margin-top:8px;">
-            ${fixAISuggestions(aiOutput)}
-        </div>
-    `;
-}
-
-/* =========================================================
-   BIND BUTTONS (ONCE)
-========================================================= */
-Object.values(ROLE_CONFIG).forEach(cfg => {
-    document.getElementById(cfg.addSkillBtnId)?.addEventListener('click', openSkillModal);
-    document.getElementById(cfg.aiBtnId)?.addEventListener('click', runAIAnalysis);
-});
-
-// Initialize LinkedIn buttons
-function initializeLinkedInButtons() {
-    // Student LinkedIn buttons
-    const studentConnectBtn = document.getElementById('connectStudentLinkedinBtn');
-    const studentViewBtn = document.getElementById('viewStudentLinkedinBtn');
-    
-    if (studentConnectBtn) {
-        studentConnectBtn.addEventListener('click', () => {
-            connectLinkedIn('student');
-        });
-    }
-    
-    if (studentViewBtn) {
-        studentViewBtn.addEventListener('click', () => {
-            viewLinkedInProfile('student');
-        });
-    }
-    
-    // Faculty LinkedIn buttons
-    const facultyConnectBtn = document.getElementById('connectFacultyLinkedinBtn');
-    const facultyViewBtn = document.getElementById('viewFacultyLinkedinBtn');
-    
-    if (facultyConnectBtn) {
-        facultyConnectBtn.addEventListener('click', () => {
-            connectLinkedIn('faculty');
-        });
-    }
-    
-    if (facultyViewBtn) {
-        facultyViewBtn.addEventListener('click', () => {
-            viewLinkedInProfile('faculty');
-        });
-    }
-    
-    // Update initial state
-    updateLinkedInUI('student');
-    updateLinkedInUI('faculty');
-}
-
-// Connect LinkedIn function
-function connectLinkedIn(role) {
-    const profileName = role === 'student' 
-        ? currentUser?.name || 'Student User' 
-        : currentUser?.name || 'Faculty Member';
-    
-    // Simulate LinkedIn OAuth flow
-    const linkedinUrl = prompt(
-        `Enter your LinkedIn profile URL for ${profileName}:\n\nExample: https://www.linkedin.com/in/yourusername`,
-        `https://www.linkedin.com/in/${profileName.toLowerCase().replace(/\s+/g, '-')}`
-    );
-    
-    if (linkedinUrl) {
-        // Validate URL format
-        if (linkedinUrl.includes('linkedin.com/in/')) {
-            // Simulate successful connection
-            linkedinProfiles[role] = {
-                connected: true,
-                profileUrl: linkedinUrl,
-                connections: Math.floor(Math.random() * 500) + 100,
-                followers: Math.floor(Math.random() * 1000) + 50,
-                profileData: {
-                    headline: role === 'student' ? 'Computer Science Student' : 'AI Research Faculty',
-                    location: 'University Campus',
-                    joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-                }
-            };
-            
-            // Update UI
-            updateLinkedInUI(role);
-            
-            // Show success notification
-            showNotification(`${role.charAt(0).toUpperCase() + role.slice(1)} LinkedIn profile connected!`, 'success');
-        } else {
-            alert('Please enter a valid LinkedIn profile URL (should contain linkedin.com/in/)');
-        }
-    }
-}
-
-// View LinkedIn profile
-function viewLinkedInProfile(role) {
-    const profile = linkedinProfiles[role];
-    
-    if (profile.connected && profile.profileUrl) {
-        // In a real app, this would open the LinkedIn profile
-        // For demo, show a modal with profile info
-        const profileName = role === 'student' 
-            ? currentUser?.name || 'Student User' 
-            : currentUser?.name || 'Faculty Member';
-        
-        const modalContent = `
-            <div style="text-align: left;">
-                <h3 style="color: #0077B5; margin-bottom: 15px;">
-                    <i class="fab fa-linkedin"></i> LinkedIn Profile
-                </h3>
-                
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                    <div style="font-weight: 600; font-size: 1.1rem; color: #0077B5; margin-bottom: 5px;">
-                        ${profileName}
-                    </div>
-                    <div style="color: var(--gray); margin-bottom: 10px;">
-                        ${profile.profileData.headline}
-                    </div>
-                    <div style="font-size: 0.9rem; color: #666;">
-                        <i class="fas fa-map-marker-alt"></i> ${profile.profileData.location}
-                    </div>
-                </div>
-                
-                <div class="linkedin-stats">
-                    <div class="linkedin-stat">
-                        <div class="linkedin-stat-value">${profile.connections}+</div>
-                        <div class="linkedin-stat-label">Connections</div>
-                    </div>
-                    <div class="linkedin-stat">
-                        <div class="linkedin-stat-value">${profile.followers}</div>
-                        <div class="linkedin-stat-label">Followers</div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 20px; font-size: 0.9rem;">
-                    <strong>Profile URL:</strong>
-                    <div class="profile-url" style="word-break: break-all; margin-top: 5px;">
-                        <a href="${profile.profileUrl}" target="_blank">${profile.profileUrl}</a>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 15px; font-size: 0.85rem; color: var(--gray);">
-                    <i class="fas fa-info-circle"></i> In a real implementation, this would redirect to LinkedIn
-                </div>
-            </div>
-        `;
-        
-        // Show modal with profile info
-        if (confirm(`Open LinkedIn profile for ${profileName}?\n\nURL: ${profile.profileUrl}\n\nClick OK to see profile details`)) {
-            // Create a simple modal
-            const modal = document.createElement('div');
-            modal.className = 'modal-overlay';
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.5);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 10000;
-            `;
-            
-            modal.innerHTML = `
-                <div style="background: white; padding: 25px; border-radius: 15px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3 style="margin: 0; color: #0077B5;">LinkedIn Profile Preview</h3>
-                        <button onclick="this.closest('.modal-overlay').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray);">&times;</button>
-                    </div>
-                    ${modalContent}
-                    <div style="margin-top: 20px; text-align: right;">
-                        <button onclick="window.open('${profile.profileUrl}', '_blank'); this.closest('.modal-overlay').remove();" style="background: #0077B5; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
-                            Open in New Tab
-                        </button>
-                        <button onclick="this.closest('.modal-overlay').remove()" style="background: var(--gray); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-                            Close
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            
-            // Close modal when clicking outside
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.remove();
-                }
-            });
-        }
-    } else {
-        showNotification('LinkedIn profile not connected yet', 'error');
-    }
-}
-
-// Update LinkedIn UI based on connection status
-function updateLinkedInUI(role) {
-    const profile = linkedinProfiles[role];
-    const statusElement = document.getElementById(`${role}LinkedinStatus`);
-    const connectBtn = document.getElementById(`connect${role.charAt(0).toUpperCase() + role.slice(1)}LinkedinBtn`);
-    const viewBtn = document.getElementById(`view${role.charAt(0).toUpperCase() + role.slice(1)}LinkedinBtn`);
-    
-    if (!statusElement || !connectBtn) return;
-    
-    if (profile.connected) {
-        statusElement.innerHTML = `
-            <span class="linkedin-connected">
-                <i class="fas fa-check-circle"></i> Connected
-            </span>
-            <br>
-            <small style="color: var(--gray);">Last synced: Just now</small>
-        `;
-        connectBtn.style.display = 'none';
-        if (viewBtn) {
-            viewBtn.style.display = 'block';
-        }
-    } else {
-        statusElement.innerHTML = `
-            <span class="linkedin-disconnected">
-                <i class="fas fa-unlink"></i> Not connected
-            </span>
-            <br>
-            <small style="color: var(--gray);">Connect to share your profile</small>
-        `;
-        connectBtn.style.display = 'block';
-        if (viewBtn) {
-            viewBtn.style.display = 'none';
-        }
-    }
-}
-
-// Sync LinkedIn data (simulated)
-function syncLinkedInData(role) {
-    if (linkedinProfiles[role].connected) {
-        // Simulate syncing data
-        const profile = linkedinProfiles[role];
-        
-        // Update some stats randomly
-        profile.connections += Math.floor(Math.random() * 10);
-        profile.followers += Math.floor(Math.random() * 5);
-        
-        // Update UI
-        updateLinkedInUI(role);
-        
-        showNotification('LinkedIn data synced successfully!', 'success');
-    } else {
-        showNotification('Please connect LinkedIn first', 'error');
-    }
-}
-
-// Initialize LinkedIn functionality when dashboard loads
-function initializeLinkedInOnDashboardLoad() {
-    if (currentRole) {
-        // Update UI
-        updateLinkedInUI(currentRole);
-    }
-}
-
-// Initialize clubs page scroll functionality
-function initializeClubsPage() {
-    const clubCards = document.querySelectorAll('#allClubsList .club-card-custom .btn-outline');
-    clubCards.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const clubName = this.closest('.club-card-custom')
-                .querySelector('strong').textContent;
-            
-            this.textContent = "Joined ✔";
-            this.classList.remove("btn-outline");
-            this.classList.add("btn-primary");
-            this.disabled = true;
-            
-            showNotification(`Joined ${clubName}`, "success");
-        });
-    });
-}
-
 // Initialize events page
 function initializeEventsPage() {
-    // Make all scrollable content functional
     const scrollableElements = document.querySelectorAll('.scrollable-content');
     scrollableElements.forEach(el => {
         if (el.scrollHeight > el.clientHeight) {
@@ -1799,8 +1744,22 @@ function initializeEventsPage() {
     });
 }
 
+// Refresh project feed button
+document.getElementById('refreshProjectFeedBtn')?.addEventListener('click', function() {
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    this.disabled = true;
+    
+    // Simulate loading
+    setTimeout(() => {
+        pc_renderProjectFeed();
+        this.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+        this.disabled = false;
+        showNotification('Project feed refreshed!', 'success');
+    }, 800);
+});
+
 /* =========================================================
-   INIT ON LOAD
+   INITIALIZATION
 ========================================================= */
 window.addEventListener('load', () => {
     if (!document.getElementById("skillModal")) {
@@ -1814,15 +1773,22 @@ window.addEventListener('load', () => {
     initializeExistingSkills();
     initializeLinkedInButtons();
     
-    // Initialize when dashboard is shown
     document.addEventListener('click', function(e) {
         if (e.target.closest('.nav-link[data-page="dashboard"]')) {
             setTimeout(initializeLinkedInOnDashboardLoad, 100);
         }
     });
     
-    // Also initialize on page load if already on dashboard
     if (document.querySelector('#student-dashboard.active') || document.querySelector('#faculty-dashboard.active')) {
         setTimeout(initializeLinkedInOnDashboardLoad, 100);
     }
+    
+    // Click outside modals to close
+    document.addEventListener('click', (e) => {
+        const skillModal = document.getElementById('skillModal');
+        if (skillModal && e.target === skillModal) closeSkillModal();
+        
+        const enhanceModal = document.getElementById('enhanceModal');
+        if (enhanceModal && e.target === enhanceModal) closeEnhanceModal();
+    });
 });
