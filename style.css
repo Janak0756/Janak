@@ -1278,77 +1278,304 @@ footer {
     margin-bottom: 12px;
 }
 
-/* Projects Collaboration specific */
-.projects-page { padding-bottom: 30px; }
-
-.project-card-custom {
-  padding: 15px;
-  border-radius: 12px;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  margin-bottom: 12px;
+/* Project Collaboration Specific Styles */
+.projects-page .main-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 20px;
+    min-height: 70vh;
 }
 
-.project-meta {
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-top:10px;
+.projects-page .full-height-card {
+    height: 600px;
+    display: flex;
+    flex-direction: column;
 }
 
-.project-owner {
-  display:flex;
-  gap:10px;
-  align-items:center;
+.projects-page .scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
 }
 
-.project-owner .avatar {
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:linear-gradient(135deg,var(--primary),var(--accent));
-  color:white;
-  font-weight:700;
+/* Project Feed Cards */
+#projectFeedList .project-card-custom {
+    padding: 20px;
+    border-radius: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    cursor: pointer;
 }
 
-.request-card {
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  margin-bottom: 10px;
-  background: var(--light);
+#projectFeedList .project-card-custom:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.15);
+    border-color: var(--primary);
 }
 
-.request-actions { display:flex; gap:8px; margin-top:10px; align-items:center; }
-
-.request-actions .small-btn {
-  padding:6px 10px;
-  font-size:0.85rem;
+#projectFeedList .project-owner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
 }
 
-#incomingRequestsList .no-requests { color:var(--gray); padding:10px; }
+#projectFeedList .project-owner .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+}
 
-.req-skills-text {
-    margin-top: 10px;
-    font-size: 0.85rem;
+#projectFeedList .project-owner .owner-info {
+    flex: 1;
+}
+
+#projectFeedList .project-owner .owner-name {
+    font-weight: 600;
     color: var(--dark);
 }
 
-/* REMOVE EDIT (PEN) ICONS FROM SKILLS */
-.skill-tag .edit-icon,
-.skill-tag .fa-pen,
-.skill-tag .fa-pencil,
-.skill-tag i {
-    display: none !important;
+#projectFeedList .project-owner .owner-role {
+    font-size: 0.8rem;
+    color: var(--gray);
 }
 
-/* If pen is added via pseudo-element */
-.skill-tag::after,
-.skill-tag::before {
-    content: none !important;
+#projectFeedList .project-card-custom h4 {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    color: var(--primary);
+}
+
+#projectFeedList .project-card-custom .project-desc {
+    color: var(--dark);
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+#projectFeedList .project-card-custom .project-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+#projectFeedList .project-card-custom .project-meta span {
+    background: var(--light);
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    color: var(--dark);
+}
+
+/* Incoming Requests Styles */
+#incomingRequestsList .request-card {
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 12px;
+    background: var(--light);
+    transition: all 0.3s ease;
+}
+
+#incomingRequestsList .request-card:hover {
+    border-color: var(--primary);
+    background: rgba(139, 95, 191, 0.05);
+}
+
+#incomingRequestsList .req-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+#incomingRequestsList .req-name {
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 0.95rem;
+}
+
+#incomingRequestsList .req-project {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-top: 3px;
+}
+
+#incomingRequestsList .pc-analyse-btn {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+}
+
+#incomingRequestsList .req-comment {
+    font-size: 0.9rem;
+    color: var(--dark);
+    margin-bottom: 10px;
+    padding: 8px;
+    background: white;
+    border-radius: 8px;
+    border-left: 3px solid var(--primary);
+}
+
+#incomingRequestsList .req-skills-text {
+    font-size: 0.85rem;
+    color: var(--dark);
+    margin-bottom: 10px;
+}
+
+#incomingRequestsList .req-skills-text strong {
+    color: var(--primary);
+}
+
+#incomingRequestsList .req-github-btn {
+    width: 100%;
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+}
+
+#incomingRequestsList .req-actions {
+    display: flex;
+    gap: 8px;
+}
+
+#incomingRequestsList .req-actions .btn {
+    flex: 1;
+    font-size: 0.85rem;
+}
+
+/* My Projects List */
+#myProjectsList .project-card-custom {
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 12px;
+    background: white;
+}
+
+#myProjectsList .project-card-custom strong {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+#myProjectsList .project-card-custom .project-meta {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-bottom: 10px;
+}
+
+#myProjectsList .project-card-custom .skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 10px 0;
+}
+
+#myProjectsList .project-card-custom .skills-list .skill-tag {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+}
+
+/* Empty States */
+.no-requests, .no-projects-msg {
+    text-align: center;
+    padding: 40px 20px !important;
+    font-style: italic;
+    color: var(--gray) !important;
+}
+
+/* Apply Button */
+.pc-apply-btn {
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px;
+    font-weight: 600;
+}
+
+.pc-apply-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Project Upload Form */
+.project-upload-form .form-group {
+    margin-bottom: 15px;
+}
+
+.project-upload-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--dark);
+}
+
+.project-upload-form .form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+    background: white;
+}
+
+.project-upload-form .form-control:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 95, 191, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .projects-page .main-content {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .projects-page .right-sidebar {
+        grid-column: 1 / -1;
+        margin-top: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .projects-page .main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .projects-page .full-height-card {
+        height: auto;
+        min-height: 400px;
+    }
+}
+
+/* Scrollbar Styling */
+.projects-page .scrollable-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.projects-page .scrollable-content::-webkit-scrollbar-track {
+    background: var(--light);
+    border-radius: 3px;
+}
+
+.projects-page .scrollable-content::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 3px;
+}
+
+.projects-page .scrollable-content::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary);
 }
 
 .faculty-dashboard .main-content,
@@ -1694,4 +1921,266 @@ footer {
 .event-stats-grid .stat-label {
     font-size: 0.85rem;
     color: var(--gray);
+}
+
+/* Full height layout for Project Collaboration */
+.projects-full-height .main-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 20px;
+    align-items: start;
+    min-height: 75vh;
+}
+
+.projects-full-height .full-height-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.projects-full-height .full-height-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Important for flex children */
+    height: auto;
+    max-height: none;
+}
+
+.projects-full-height .card-header {
+    flex-shrink: 0;
+}
+
+.projects-full-height .scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 200px;
+    max-height: none;
+}
+
+/* Left sidebar specific - two stacked cards */
+.projects-full-height .left-sidebar .full-height-card:first-child {
+    flex: 1;
+}
+
+.projects-full-height .left-sidebar .full-height-card:last-child {
+    flex: 1;
+}
+
+/* Center feed - single full height card */
+.projects-full-height .center-feed .full-height-card {
+    height: 100%;
+}
+
+/* Right sidebar - single full height card */
+.projects-full-height .right-sidebar .full-height-card {
+    height: 100%;
+}
+
+/* Project feed improvements for full height */
+#projectFeedList {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 5px 5px 15px 0;
+}
+
+#projectFeedList .project-card-custom {
+    flex-shrink: 0;
+}
+
+/* Scrollbar styling for full height containers */
+.projects-full-height .scrollable-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.projects-full-height .scrollable-content::-webkit-scrollbar-track {
+    background: var(--light);
+    border-radius: 4px;
+}
+
+.projects-full-height .scrollable-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 4px;
+}
+
+.projects-full-height .scrollable-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--secondary), var(--primary));
+}
+
+/* Form improvements for full height */
+.project-upload-form .form-control {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 0.95rem;
+}
+
+.project-upload-form textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* Responsive design for full height layout */
+@media (max-width: 1200px) {
+    .projects-full-height .main-content {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .projects-full-height .right-sidebar {
+        grid-column: 1 / -1;
+        margin-top: 0;
+    }
+    
+    .projects-full-height .right-sidebar .full-height-card {
+        min-height: 500px;
+    }
+}
+
+@media (max-width: 768px) {
+    .projects-full-height .main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .projects-full-height .full-height-container {
+        gap: 15px;
+    }
+    
+    .projects-full-height .full-height-card {
+        min-height: 400px;
+    }
+}
+
+/* Make textarea auto-expand */
+.auto-expand {
+    resize: vertical;
+    min-height: 100px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Refresh button styling */
+#refreshProjectFeedBtn {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+}
+
+#refreshProjectFeedBtn:hover {
+    background-color: var(--light);
+}
+
+/* Improve project cards in feed */
+#projectFeedList .project-card-custom {
+    padding: 20px;
+    border-radius: 12px;
+    background: white;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+#projectFeedList .project-card-custom:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(139, 95, 191, 0.15);
+    border-color: var(--primary);
+}
+
+#projectFeedList .project-card-custom h4 {
+    font-size: 1.1rem;
+    color: var(--primary);
+    margin-bottom: 10px;
+    padding-right: 40px;
+}
+
+#projectFeedList .project-card-custom .project-desc {
+    color: var(--dark);
+    line-height: 1.6;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+}
+
+/* Project meta info */
+.project-meta-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 10px 0;
+    font-size: 0.85rem;
+    color: var(--gray);
+}
+
+.project-meta-info span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Skills container */
+.skills-container {
+    margin: 15px 0;
+}
+
+.skills-container .skills-label {
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+/* Make apply button more prominent */
+.pc-apply-btn {
+    margin-top: 15px;
+    padding: 12px 20px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.pc-apply-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(74, 111, 165, 0.3);
+}
+
+/* Project meta info styling */
+.project-meta-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 10px 0;
+    font-size: 0.85rem;
+    color: var(--gray);
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.project-meta-info span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.project-meta-info i {
+    color: var(--primary);
+}
+
+/* Roles container */
+.roles-container {
+    margin-top: 10px;
+    padding: 10px;
+    background: var(--light);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary);
+}
+
+.roles-container div:first-child {
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.roles-container div:last-child {
+    color: var(--gray);
+    font-size: 0.85rem;
+    line-height: 1.4;
 }
