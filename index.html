@@ -1338,7 +1338,7 @@
         </div>
     </div> <!-- END OF EVENTS PAGE -->
 
-    <!-- Project Collaboration page -->
+    <!-- Project Collaboration page - Updated for full length sections -->
     <div class="page" id="projects-page">
         <div class="container projects-page">
             <div class="page-header">
@@ -1348,76 +1348,114 @@
                 </p>
             </div>
 
-            <div class="main-content">
-                <!-- LEFT: My Projects (user's own projects + details) -->
-                <div class="left-sidebar">
-                    <div class="card">
+            <div class="main-content projects-full-height">
+                <!-- LEFT: Incoming Requests -->
+                <div class="left-sidebar full-height-container">
+                    <!-- Incoming Requests to my projects -->
+                    <div class="card full-height-card">
+                        <div class="card-header">
+                            <div class="card-title">Incoming Requests</div>
+                            <span style="color:var(--gray); font-size:0.9rem;">Requests to join your projects</span>
+                        </div>
+                        
+                        <div class="scrollable-content" id="incomingRequestsList">
+                            <div class="no-requests" style="color:var(--gray); padding:12px;">
+                                No incoming requests yet.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- My Projects -->
+                    <div class="card full-height-card" style="margin-top: 20px;">
                         <div class="card-header">
                             <div class="card-title">My Projects</div>
                             <span style="font-size:0.8rem; color:var(--gray);">Your ongoing contributions</span>
                         </div>
-
-                        <div id="myProjectsList">
-                            <!-- Example placeholder — will be replaced by JS -->
-                            <div class="project-card-custom no-projects-msg" style="color:var(--gray); padding:12px;">
-                                You haven't posted any projects yet. Use the form on the right to add a project.
+                        
+                        <div class="scrollable-content" id="myProjectsList">
+                            <div class="no-projects-msg" style="color:var(--gray); padding:12px;">
+                                You haven't posted any projects yet.
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- CENTER: Public Project Feed (others' posted projects) -->
-                <div class="center-feed">
-                    <div class="card">
+                <!-- CENTER: Public Project Feed (Full Height) -->
+                <div class="center-feed full-height-container">
+                    <div class="card full-height-card">
                         <div class="card-header">
                             <div class="card-title">Project Feed</div>
-                            <span style="color:var(--gray); font-size:0.9rem;">Projects posted by others — apply to
-                                join</span>
+                            <span style="color:var(--gray); font-size:0.9rem;">Projects posted by others — apply to join</span>
+                            <button class="btn btn-outline btn-small" id="refreshProjectFeedBtn">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
                         </div>
-
-                        <div id="projectFeedList">
-                            <!-- feed items added by JS (or existing static cards) -->
+                        
+                        <div class="scrollable-content" id="projectFeedList">
+                            <!-- Projects will be loaded here -->
                         </div>
                     </div>
                 </div>
 
-                <!-- RIGHT: Create Project + Incoming Requests -->
-                <div class="right-sidebar">
-                    <!-- Create Project -->
-                    <div class="card">
+                <!-- RIGHT: Create Project (Full Height) -->
+                <div class="right-sidebar full-height-container">
+                    <div class="card full-height-card">
                         <div class="card-header">
-                            <div class="card-title">Raise a New Project</div>
+                            <div class="card-title">Create New Project</div>
+                            <span style="color:var(--gray); font-size:0.9rem;">Share your ideas with the community</span>
                         </div>
-
-                        <div class="project-upload-form">
-                            <input type="text" class="form-control" id="pc_projTitle" placeholder="Project Title">
-                            <textarea class="form-control" id="pc_projDesc" rows="3"
-                                placeholder="Project Description"></textarea>
-                            <input type="text" class="form-control" id="pc_projGithub"
-                                placeholder="GitHub Repository URL (optional)">
-                            <label style="margin-top:10px; font-weight:600;">Required Skills (comma
-                                separated)</label>
-                            <input type="text" class="form-control" id="pc_projSkills"
-                                placeholder="e.g. React, Node.js, ML">
-                            <label style="margin-top:10px; font-weight:600;">Roles Needed</label>
-                            <input type="text" class="form-control" id="pc_projRoles"
-                                placeholder="e.g. Frontend, Backend, Designer">
-                            <button class="btn btn-primary" style="margin-top:15px;" id="pc_postProjectBtn">
-                                <i class="fas fa-upload"></i> Post Project
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Incoming Requests to my projects -->
-                    <div class="card" style="margin-top: 16px;">
-                        <div class="card-header">
-                            <div class="card-title">Requests From Contributors</div>
-                            <span style="color:var(--gray); font-size:0.9rem;">Requests to join your projects</span>
-                        </div>
-
-                        <div id="incomingRequestsList">
-                            <div class="no-requests" style="color:var(--gray); padding:12px;">
-                                No incoming requests yet.
+                        
+                        <div class="scrollable-content">
+                            <div class="project-upload-form">
+                                <div class="form-group">
+                                    <label>Project Title *</label>
+                                    <input type="text" class="form-control" id="pc_projTitle" placeholder="Enter project title" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Project Description *</label>
+                                    <textarea class="form-control auto-expand" id="pc_projDesc" placeholder="Describe your project in detail..." required></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>GitHub Repository URL (optional)</label>
+                                    <input type="text" class="form-control" id="pc_projGithub" placeholder="https://github.com/username/repo">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Required Skills * (comma separated)</label>
+                                    <input type="text" class="form-control" id="pc_projSkills" placeholder="e.g., React, Node.js, Machine Learning" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Roles Needed * (comma separated)</label>
+                                    <input type="text" class="form-control" id="pc_projRoles" placeholder="e.g., Frontend, Backend, UI/UX Designer" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Expected Time Commitment (optional)</label>
+                                    <select class="form-control" id="pc_projTimeCommitment">
+                                        <option value="">Select commitment level</option>
+                                        <option value="low">Low (1-5 hrs/week)</option>
+                                        <option value="medium">Medium (5-10 hrs/week)</option>
+                                        <option value="high">High (10+ hrs/week)</option>
+                                    </select>
+                                </div>
+                                
+                                <button class="btn btn-primary" style="width: 100%; margin-top: 15px;" id="pc_postProjectBtn">
+                                    <i class="fas fa-upload"></i> Post Project
+                                </button>
+                                
+                                <div style="margin-top: 20px; padding: 15px; background: var(--light); border-radius: 10px;">
+                                    <h4 style="font-size: 0.9rem; margin-bottom: 10px;">💡 Tips for a successful project:</h4>
+                                    <ul style="font-size: 0.8rem; color: var(--gray); padding-left: 20px;">
+                                        <li>Be specific about what you're building</li>
+                                        <li>List clear requirements and expectations</li>
+                                        <li>Add a GitHub link if available</li>
+                                        <li>Mention time commitment expected</li>
+                                        <li>Specify team size and needed expertise</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
