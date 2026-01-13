@@ -587,7 +587,7 @@ function updateAllClubsButtons() {
 }
 
 /* =========================================================
-   PROJECT COLLABORATION FUNCTIONS
+   PROJECT COLLABORATION FUNCTIONS - UPDATED FOR NORMAL FORMS
 ========================================================= */
 function pc_initializeDemoContent() {
     if (pc_projects.length) return;
@@ -955,12 +955,12 @@ function pc_onProjectsPageShow() {
     pc_renderProjectFeed();
     pc_renderIncomingRequests();
     
-    // Enable scroll for all containers
+    // Enable scroll only for project feed
     setTimeout(() => {
-        const scrollableElements = document.querySelectorAll('.projects-page .scrollable-content');
-        scrollableElements.forEach(el => {
-            el.style.overflowY = 'auto';
-        });
+        const projectFeed = document.getElementById('projectFeedList');
+        if (projectFeed) {
+            projectFeed.style.overflowY = 'auto';
+        }
         
         // Initialize refresh button
         const refreshBtn = document.getElementById('refreshProjectFeedBtn');
@@ -1324,8 +1324,19 @@ function showPage(pageId) {
 }
 
 function applyRoleBasedUI(role) {
+    // Hide Clubs for faculty
     document.querySelectorAll('.nav-link[data-page="clubs"]').forEach(el => {
         el.style.display = role === 'faculty' ? 'none' : '';
+    });
+
+    // Hide Skill Summary for students
+    document.querySelectorAll('.nav-link[data-page="skill-summary"]').forEach(el => {
+        el.style.display = role === 'student' ? 'none' : '';
+    });
+
+    // Hide Skill Summary in footer for students
+    document.querySelectorAll('footer .nav-link[data-page="skill-summary"]').forEach(el => {
+        el.parentElement.style.display = role === 'student' ? 'none' : '';
     });
 
     const exploreBtn = document.getElementById('exploreClubsBtn');
@@ -1363,8 +1374,15 @@ function showDashboard() {
     mainHeader.classList.remove('hidden');
     mainFooter.classList.remove('hidden');
     applyRoleBasedUI(currentRole);
-    pages.forEach(p => p.classList.remove('active'));
-    document.getElementById('login-page').classList.remove('active');
+    
+    // If student is on skill-summary page, redirect to dashboard
+    if (currentRole === 'student' && document.getElementById('skill-summary-page').classList.contains('active')) {
+        pages.forEach(p => p.classList.remove('active'));
+        document.getElementById('student-dashboard').classList.add('active');
+    } else {
+        pages.forEach(p => p.classList.remove('active'));
+        document.getElementById('login-page').classList.remove('active');
+    }
 
     const cfg = ROLE_CONFIG[currentRole];
     document.getElementById(cfg.dashboardId).classList.add('active');
@@ -1411,6 +1429,16 @@ navLinks.forEach(link => {
     link.addEventListener('click', e => {
         e.preventDefault();
         const page = e.target.getAttribute('data-page');
+        
+        // Prevent students from accessing skill-summary
+        if (page === 'skill-summary' && currentRole === 'student') {
+            showNotification('Skill Summary is not available for students', 'error');
+            showPage('dashboard');
+            navLinks.forEach(nav => nav.classList.remove('active'));
+            document.querySelector('[data-page="dashboard"]').classList.add('active');
+            return;
+        }
+        
         showPage(page);
         navLinks.forEach(nav => nav.classList.remove('active'));
         e.target.classList.add('active');
@@ -1731,7 +1759,7 @@ function pc_openAnalyseModal(req) {
         })
         .catch(() => {
             content.innerHTML = `<p style="color:red;">Unable to reach backend.</p>`;
-        });
+    });
 }
 
 // Initialize events page
