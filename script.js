@@ -361,6 +361,7 @@ function initializeNetworkFilters() {
 
     let activeFilters = {
         department: "",
+ 
         skills: "",
         role: "",
         year: ""
@@ -587,7 +588,7 @@ function updateAllClubsButtons() {
 }
 
 /* =========================================================
-   PROJECT COLLABORATION FUNCTIONS - UPDATED FOR NORMAL FORMS
+   PROJECT COLLABORATION FUNCTIONS - UPDATED WITH INLINE FORM
 ========================================================= */
 function pc_initializeDemoContent() {
     if (pc_projects.length) return;
@@ -750,6 +751,7 @@ function pc_renderProjectFeed() {
                     </div>
                     <button class="btn btn-primary pc-apply-btn" 
                             data-project-id="${p.id}"
+                            onclick="showApplyForm('${p.id}', '${p.title.replace(/'/g, "\\'")}')"
                             ${p.team.includes(currentUser?.name) ? 'disabled' : ''}>
                         ${p.team.includes(currentUser?.name) ? 'Already Applied ✓' : 'Apply to Join'}
                     </button>
@@ -969,6 +971,186 @@ function pc_onProjectsPageShow() {
             refreshBtn.disabled = false;
         }
     }, 100);
+}
+
+/* =========================================================
+   INLINE APPLICATION FORM FUNCTIONS
+========================================================= */
+function showApplyForm(projectId, projectTitle) {
+    // Remove any existing forms
+    const existingForm = document.querySelector('.apply-form');
+    if (existingForm) {
+        existingForm.remove();
+        // Show the button again for the previous project
+        const prevBtn = document.querySelector('.pc-apply-btn[data-form-open="true"]');
+        if (prevBtn) {
+            prevBtn.style.display = 'inline-flex';
+            prevBtn.removeAttribute('data-form-open');
+        }
+    }
+    
+    // Find the project card and apply button
+    const projectCard = document.querySelector(`.project-card-custom[data-project-id="${projectId}"]`);
+    const applyBtn = projectCard.querySelector('.pc-apply-btn');
+    
+    if (!projectCard || !applyBtn) return;
+    
+    // Hide the apply button
+    applyBtn.style.display = 'none';
+    applyBtn.setAttribute('data-form-open', 'true');
+    
+    // Create the inline form
+    const formHtml = `
+        <div class="apply-form" data-project-id="${projectId}">
+            <div class="apply-form-header">
+                <div class="apply-form-title">Apply to Join: ${projectTitle}</div>
+                <button class="clear-apply-form" onclick="cancelApplication('${projectId}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="form-group">
+                <label for="applySkills_${projectId}">Relevant Skills <small style="color: var(--gray);">(comma separated)</small></label>
+                <input type="text" id="applySkills_${projectId}" class="form-control" 
+                       placeholder="e.g., React, Node.js, UI/UX Design" required>
+            </div>
+            <div class="form-group">
+                <label for="applyExperience_${projectId}">Previous Experience</label>
+                <textarea id="applyExperience_${projectId}" class="form-control" rows="3" 
+                          placeholder="Briefly describe your relevant experience..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="applyRole_${projectId}">Preferred Role</label>
+                <input type="text" id="applyRole_${projectId}" class="form-control" 
+                       placeholder="e.g., Frontend Developer, Designer" required>
+            </div>
+            <div class="form-group">
+                <label for="applyTime_${projectId}">Hours per Week Available</label>
+                <input type="number" id="applyTime_${projectId}" class="form-control" 
+                       placeholder="e.g., 10" min="1" max="40" required>
+            </div>
+            <div class="form-group">
+                <label for="applyGithub_${projectId}">GitHub Profile URL <small style="color: var(--gray);">(optional)</small></label>
+                <input type="url" id="applyGithub_${projectId}" class="form-control" 
+                       placeholder="https://github.com/yourusername">
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-primary" onclick="submitApplication('${projectId}')">
+                    <i class="fas fa-paper-plane"></i> Submit Application
+                </button>
+                <button type="button" class="btn btn-outline" onclick="cancelApplication('${projectId}')">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Insert the form after the project card
+    projectCard.insertAdjacentHTML('afterend', formHtml);
+    
+    // Focus on first input
+    setTimeout(() => {
+        document.getElementById(`applySkills_${projectId}`)?.focus();
+    }, 100);
+}
+
+function cancelApplication(projectId) {
+    // Remove the form
+    const form = document.querySelector(`.apply-form[data-project-id="${projectId}"]`);
+    if (form) {
+        form.remove();
+    }
+    
+    // Show the apply button again
+    const projectCard = document.querySelector(`.project-card-custom[data-project-id="${projectId}"]`);
+    const applyBtn = projectCard?.querySelector('.pc-apply-btn[data-form-open="true"]');
+    if (applyBtn) {
+        applyBtn.style.display = 'inline-flex';
+        applyBtn.removeAttribute('data-form-open');
+    }
+}
+
+function submitApplication(projectId) {
+    const projectCard = document.querySelector(`.project-card-custom[data-project-id="${projectId}"]`);
+    const projectTitle = projectCard?.querySelector('h4')?.textContent || 'Project';
+    
+    const skillsInput = document.getElementById(`applySkills_${projectId}`);
+    const experienceInput = document.getElementById(`applyExperience_${projectId}`);
+    const roleInput = document.getElementById(`applyRole_${projectId}`);
+    const timeInput = document.getElementById(`applyTime_${projectId}`);
+    const githubInput = document.getElementById(`applyGithub_${projectId}`);
+    
+    if (!skillsInput || !experienceInput || !roleInput || !timeInput) return;
+    
+    const skills = skillsInput.value.trim();
+    const experience = experienceInput.value.trim();
+    const role = roleInput.value.trim();
+    const time = timeInput.value;
+    const github = githubInput?.value.trim() || '';
+    
+    if (!skills || !experience || !role || !time) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+    
+    if (isNaN(time) || time < 1 || time > 40) {
+        showNotification('Please enter valid hours (1-40)', 'error');
+        return;
+    }
+    
+    // Submit application logic
+    const applicationData = {
+        projectId,
+        projectTitle,
+        skills: skills.split(',').map(s => s.trim()).filter(Boolean),
+        experience,
+        role,
+        time: `${time} hours/week`,
+        github,
+        timestamp: new Date().toISOString(),
+        applicantName: currentUser ? currentUser.name : 'Anonymous'
+    };
+    
+    console.log('Application submitted:', applicationData);
+    
+    // Add to requests
+    const request = {
+        id: "req_" + Date.now(),
+        projectId: projectId,
+        applicantName: applicationData.applicantName,
+        github: github,
+        comment: experience,
+        skills: applicationData.skills,
+        role: role,
+        timeCommitment: time + ' hours/week'
+    };
+    
+    pc_requests.unshift(request);
+    
+    // Remove the form
+    cancelApplication(projectId);
+    
+    // Update button to show "Applied"
+    const applyBtn = projectCard.querySelector('.pc-apply-btn');
+    if (applyBtn) {
+        applyBtn.innerHTML = '<i class="fas fa-check"></i> Applied';
+        applyBtn.classList.remove('btn-primary');
+        applyBtn.classList.add('applied-state');
+        applyBtn.disabled = true;
+        applyBtn.onclick = null;
+    }
+    
+    // Update the incoming requests display
+    pc_renderIncomingRequests();
+    
+    showNotification('Application submitted successfully!', 'success');
+}
+
+function cleanupApplicationForms() {
+    const forms = document.querySelectorAll('.apply-form');
+    forms.forEach(form => {
+        const projectId = form.getAttribute('data-project-id');
+        cancelApplication(projectId);
+    });
 }
 
 /* =========================================================
@@ -1281,6 +1463,9 @@ function closeEnhanceModal() {
    PAGE NAVIGATION
 ========================================================= */
 function showPage(pageId) {
+    // Clean up any open application forms
+    cleanupApplicationForms();
+    
     pages.forEach(page => page.classList.remove('active'));
 
     if (pageId === 'dashboard') {
@@ -1557,48 +1742,8 @@ document.getElementById('pc_postProjectBtn')?.addEventListener('click', () => {
     document.getElementById('pc_projTimeCommitment').value = "";
 });
 
-// Apply to project event delegation
+// Apply to project event delegation - UPDATED FOR INLINE FORM
 document.addEventListener('click', function(e) {
-    if (e.target.closest('.pc-apply-btn')) {
-        const btn = e.target.closest('.pc-apply-btn');
-        const projId = btn.getAttribute('data-project-id');
-        
-        if (!currentUser) {
-            showNotification("Please login to apply", "error");
-            return;
-        }
-        
-        const name = currentUser.name;
-        const github = prompt("Your GitHub profile URL:", "https://github.com/yourusername");
-        const comment = prompt("Why do you want to join this project? What can you contribute?", "");
-        const skills = (prompt("Your skills (comma separated):", "") || "")
-            .split(",").map(s => s.trim()).filter(Boolean);
-        
-        if (!github || !comment) {
-            showNotification("Application cancelled", "error");
-            return;
-        }
-        
-        const req = {
-            id: "req_" + Date.now(),
-            projectId: projId,
-            applicantName: name,
-            github: github,
-            comment: comment,
-            skills: skills
-        };
-        
-        pc_requests.unshift(req);
-        btn.innerHTML = '<i class="fas fa-check"></i> Applied';
-        btn.classList.remove("btn-primary");
-        btn.classList.add("btn-outline");
-        btn.disabled = true;
-        
-        pc_renderIncomingRequests();
-        pc_renderMyProjects();
-        showNotification("Application sent successfully!", "success");
-    }
-    
     // Accept request
     if (e.target.closest('.pc-accept-btn')) {
         const id = e.target.getAttribute('data-request-id');
