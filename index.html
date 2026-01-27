@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SkillConnect - Professional Network</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="formate.css">
 </head>
 
 <body>
@@ -1338,7 +1338,7 @@
         </div>
     </div> <!-- END OF EVENTS PAGE -->
 
-    <!-- Project Collaboration page - Normal Forms Layout -->
+    <!-- Project Collaboration page -->
     <div class="page" id="projects-page">
         <div class="container projects-page">
             <div class="page-header">
@@ -1349,98 +1349,1010 @@
             </div>
 
             <div class="main-content">
-                <!-- LEFT: My Projects (Normal Form) -->
+                <!-- LEFT: My Projects (user's own projects + details) -->
                 <div class="left-sidebar">
-                    <div class="card">
+                    <div class="card full-height-card">
                         <div class="card-header">
                             <div class="card-title">My Projects</div>
                             <span style="font-size:0.8rem; color:var(--gray);">Your ongoing contributions</span>
                         </div>
-                        
-                        <div id="myProjectsList">
-                            <div class="no-projects-msg" style="color:var(--gray); padding:12px; text-align: center;">
-                                You haven't posted any projects yet.
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Incoming Requests to my projects -->
-                    <div class="card" style="margin-top: 20px;">
-                        <div class="card-header">
-                            <div class="card-title">Incoming Requests</div>
-                            <span style="color:var(--gray); font-size:0.9rem;">Requests to join your projects</span>
-                        </div>
-                        
-                        <div id="incomingRequestsList">
-                            <div class="no-requests" style="color:var(--gray); padding:12px; text-align: center;">
-                                No incoming requests yet.
+                        <div id="myProjectsList" class="scrollable-content">
+                            <!-- Example placeholder — will be replaced by JS -->
+                            <div class="project-card-custom">
+                                <div class="project-card-header">
+                                    <strong class="project-title">Portfolio Website Redesign</strong>
+                                    <span class="project-status status-in-progress">In Progress</span>
+                                </div>
+                                <p class="project-description">Redesigning my portfolio website with modern UI/UX principles and responsive design.</p>
+                                <div class="project-owner">
+                                    <div class="avatar">
+                                        <i class="fas fa-user-graduate"></i>
+                                    </div>
+                                    <div class="owner-info">
+                                        <div class="owner-name">You</div>
+                                        <div class="owner-role">Project Owner</div>
+                                    </div>
+                                </div>
+                                <div class="project-meta">
+                                    <div class="meta-item">
+                                        <i class="fas fa-users"></i>
+                                        <span>3 Contributors</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>2 Weeks</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="fas fa-code-branch"></i>
+                                        <span>Frontend</span>
+                                    </div>
+                                </div>
+                                <div class="required-skills">
+                                    <h4><i class="fas fa-code"></i> Required Skills</h4>
+                                    <div class="skills-tags">
+                                        <span class="skill-tag">React</span>
+                                        <span class="skill-tag">CSS</span>
+                                        <span class="skill-tag">UI/UX</span>
+                                    </div>
+                                </div>
+                                <button class="pc-apply-btn">View Details</button>
+                            </div>
+
+                            <div class="project-card-custom">
+                                <div class="project-card-header">
+                                    <strong class="project-title">E-commerce Mobile App</strong>
+                                    <span class="project-status status-open">Open</span>
+                                </div>
+                                <p class="project-description">Building a cross-platform e-commerce app for local businesses.</p>
+                                <div class="project-owner">
+                                    <div class="avatar">
+                                        <i class="fas fa-user-graduate"></i>
+                                    </div>
+                                    <div class="owner-info">
+                                        <div class="owner-name">You</div>
+                                        <div class="owner-role">Project Owner</div>
+                                    </div>
+                                </div>
+                                <div class="project-meta">
+                                    <div class="meta-item">
+                                        <i class="fas fa-users"></i>
+                                        <span>5 Contributors</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>1 Month</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="fas fa-code-branch"></i>
+                                        <span>Full Stack</span>
+                                    </div>
+                                </div>
+                                <div class="required-skills">
+                                    <h4><i class="fas fa-code"></i> Required Skills</h4>
+                                    <div class="skills-tags">
+                                        <span class="skill-tag">React Native</span>
+                                        <span class="skill-tag">Node.js</span>
+                                        <span class="skill-tag">MongoDB</span>
+                                    </div>
+                                </div>
+                                <button class="pc-apply-btn">View Details</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- CENTER: Public Project Feed (Scrollable List) -->
+                <!-- CENTER: Public Project Feed (others' posted projects) -->
                 <div class="center-feed">
-                    <div class="card">
+                    <div class="card full-height-card">
                         <div class="card-header">
                             <div class="card-title">Project Feed</div>
                             <span style="color:var(--gray); font-size:0.9rem;">Projects posted by others — apply to join</span>
-                            <button class="btn btn-outline btn-small" id="refreshProjectFeedBtn">
-                                <i class="fas fa-sync-alt"></i> Refresh
-                            </button>
                         </div>
-                        
-                        <div id="projectFeedList" style="max-height: 500px; overflow-y: auto; padding: 10px;">
-                            <!-- Projects will be loaded here -->
+
+                        <div id="projectFeedList" style="height: 1000px; overflow-y: auto; padding-right: 15px;">
+                            <!-- Project Card 1 -->
+                            <div class="project-feed-card" style="--card-index: 0;">
+                                <div class="project-feed-header">
+                                    <div>
+                                        <h3 class="project-feed-title">AI-Powered Learning Platform</h3>
+                                        <span class="project-status status-open">Open for Contributors</span>
+                                    </div>
+                                </div>
+                                
+                                <p class="project-description">
+                                    Building an intelligent learning platform that adapts to student performance using machine learning algorithms. The platform will include personalized learning paths, automated assessments, and progress tracking.
+                                </p>
+                                
+                                <!-- Contact Information Section -->
+                                <div class="project-contact-section">
+                                    <h4><i class="fas fa-id-card"></i> Contact Information</h4>
+                                    
+                                    <!-- Project Owner Contact -->
+                                    <div class="project-owner-contact">
+                                        <div class="owner-avatar">
+                                            <i class="fas fa-user-tie"></i>
+                                        </div>
+                                        <div class="owner-contact-info">
+                                            <h4>Dr. Priya Sharma</h4>
+                                            <p>AI Research Lead • Computer Science Department</p>
+                                            <div class="owner-contact-methods">
+                                                <a href="mailto:priya.sharma@skillconnect.edu" class="contact-method">
+                                                    <i class="fas fa-envelope"></i>
+                                                    Email
+                                                </a>
+                                                <a href="tel:+919714394081" class="contact-method">
+                                                    <i class="fas fa-phone"></i>
+                                                    Call
+                                                </a>
+                                                <a href="https://wa.me/919714394081" class="contact-method">
+                                                    <i class="fab fa-whatsapp"></i>
+                                                    WhatsApp
+                                                </a>
+                                                <a href="https://linkedin.com/in/priyasharma" class="contact-method">
+                                                    <i class="fab fa-linkedin"></i>
+                                                    LinkedIn
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Additional Contact Details -->
+                                    <div class="contact-details">
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-university"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Department</div>
+                                                <div class="contact-value">Computer Science</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-clock"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Response Time</div>
+                                                <div class="contact-value">Within 24 hours</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Office Hours</div>
+                                                <div class="contact-value">Mon-Fri, 10 AM - 4 PM</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Location</div>
+                                                <div class="contact-value">Tech Building, Room 405</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Communication Channels -->
+                                    <div class="contact-channels" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border);">
+                                        <h5 style="color: var(--dark); margin-bottom: 12px; font-size: 0.95rem;">
+                                            <i class="fas fa-comments"></i> Preferred Communication
+                                        </h5>
+                                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                                                <span style="font-size: 0.9rem;">Email (Primary)</span>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                                                <span style="font-size: 0.9rem;">WhatsApp (Secondary)</span>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-times-circle" style="color: var(--danger);"></i>
+                                                <span style="font-size: 0.9rem;">No Calls after 8 PM</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Quick Contact Actions -->
+                                    <div class="contact-actions">
+                                        <a href="mailto:priya.sharma@skillconnect.edu" class="contact-btn email">
+                                            <i class="fas fa-envelope"></i>
+                                            Send Email
+                                        </a>
+                                        <a href="https://wa.me/919714394081" class="contact-btn whatsapp">
+                                            <i class="fab fa-whatsapp"></i>
+                                            WhatsApp Message
+                                        </a>
+                                        <a href="tel:+919714394081" class="contact-btn call">
+                                            <i class="fas fa-phone"></i>
+                                            Call Now
+                                        </a>
+                                        <a href="https://calendly.com/priyasharma/meeting" class="contact-btn" style="background: linear-gradient(135deg, #6f42c1, #6610f2); color: white;">
+                                            <i class="fas fa-calendar-check"></i>
+                                            Schedule Meeting
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Project Details -->
+                                <div class="project-meta-enhanced">
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">Team Size</div>
+                                            <div class="meta-value">3-5 Contributors</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-calendar"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">Duration</div>
+                                            <div class="meta-value">3 Months</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-code-branch"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">GitHub</div>
+                                            <div class="meta-value">github.com/ai-learning</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-tasks"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">Progress</div>
+                                            <div class="meta-value">40% Complete</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Required Skills -->
+                                <div class="project-skills-enhanced">
+                                    <h4><i class="fas fa-code"></i> Required Skills</h4>
+                                    <div class="skills-tags-enhanced">
+                                        <span class="skill-tag-enhanced">
+                                            Python
+                                            <span class="skill-level-indicator">Advanced</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            Machine Learning
+                                            <span class="skill-level-indicator">Intermediate</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            React
+                                            <span class="skill-level-indicator">Intermediate</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            Node.js
+                                            <span class="skill-level-indicator">Beginner+</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            MongoDB
+                                            <span class="skill-level-indicator">Beginner</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <button class="pc-apply-btn-enhanced">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Apply to Contribute
+                                </button>
+                            </div>
+                            
+                            <!-- Project Card 2 - Enhanced Contact -->
+                            <div class="project-feed-card" style="--card-index: 1;">
+                                <div class="project-feed-header">
+                                    <div>
+                                        <h3 class="project-feed-title">Smart Campus Navigation System</h3>
+                                        <span class="project-status status-open">Open for Contributors</span>
+                                    </div>
+                                </div>
+                                
+                                <p class="project-description">
+                                    Developing an AR-based indoor navigation system for campus buildings using IoT sensors and mobile app. The system will help students navigate complex buildings and find classrooms, labs, and offices efficiently.
+                                </p>
+                                
+                                <!-- Contact Information Section -->
+                                <div class="project-contact-section">
+                                    <h4><i class="fas fa-id-card"></i> Contact Information</h4>
+                                    
+                                    <!-- Project Owner Contact -->
+                                    <div class="project-owner-contact">
+                                        <div class="owner-avatar">
+                                            <i class="fas fa-user-graduate"></i>
+                                        </div>
+                                        <div class="owner-contact-info">
+                                            <h4>Meet Shah</h4>
+                                            <p>CS Student • 4th Year • Project Lead</p>
+                                            <div class="owner-contact-methods">
+                                                <a href="mailto:meet.shah@skillconnect.edu" class="contact-method">
+                                                    <i class="fas fa-envelope"></i>
+                                                    Email
+                                                </a>
+                                                <a href="tel:+919714394082" class="contact-method">
+                                                    <i class="fas fa-phone"></i>
+                                                    Call
+                                                </a>
+                                                <a href="https://wa.me/919714394082" class="contact-method">
+                                                    <i class="fab fa-whatsapp"></i>
+                                                    WhatsApp
+                                                </a>
+                                                <a href="https://github.com/meetshah" class="contact-method">
+                                                    <i class="fab fa-github"></i>
+                                                    GitHub
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Additional Contact Details -->
+                                    <div class="contact-details">
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-university"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Department</div>
+                                                <div class="contact-value">Computer Science</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-clock"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Response Time</div>
+                                                <div class="contact-value">Within 12 hours</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Availability</div>
+                                                <div class="contact-value">Evenings & Weekends</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Campus Location</div>
+                                                <div class="contact-value">Main Library, Study Area 3</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Team Communication -->
+                                    <div class="contact-channels" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border);">
+                                        <h5 style="color: var(--dark); margin-bottom: 12px; font-size: 0.95rem;">
+                                            <i class="fas fa-users"></i> Team Communication
+                                        </h5>
+                                        <div style="margin-bottom: 15px;">
+                                            <p style="font-size: 0.9rem; color: var(--gray); margin-bottom: 8px;">
+                                                <strong>Team Meeting:</strong> Every Saturday, 3-4 PM in CS Lab 2
+                                            </p>
+                                            <p style="font-size: 0.9rem; color: var(--gray);">
+                                                <strong>Online Channel:</strong> Discord server available after acceptance
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Quick Contact Actions -->
+                                    <div class="contact-actions">
+                                        <a href="mailto:meet.shah@skillconnect.edu" class="contact-btn email">
+                                            <i class="fas fa-envelope"></i>
+                                            Send Email
+                                        </a>
+                                        <a href="https://wa.me/919714394082" class="contact-btn whatsapp">
+                                            <i class="fab fa-whatsapp"></i>
+                                            WhatsApp Message
+                                        </a>
+                                        <a href="tel:+919714394082" class="contact-btn call">
+                                            <i class="fas fa-phone"></i>
+                                            Call Now
+                                        </a>
+                                        <a href="https://discord.gg/campusnav" class="contact-btn" style="background: linear-gradient(135deg, #7289da, #5865f2); color: white;">
+                                            <i class="fab fa-discord"></i>
+                                            Join Discord
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Project Details -->
+                                <div class="project-meta-enhanced">
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">Team Size</div>
+                                            <div class="meta-value">4-6 Contributors</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-calendar"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">Duration</div>
+                                            <div class="meta-value">4 Months</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-code-branch"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">GitHub</div>
+                                            <div class="meta-value">github.com/campus-navigation</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-tasks"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">Progress</div>
+                                            <div class="meta-value">25% Complete</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Required Skills -->
+                                <div class="project-skills-enhanced">
+                                    <h4><i class="fas fa-code"></i> Required Skills</h4>
+                                    <div class="skills-tags-enhanced">
+                                        <span class="skill-tag-enhanced">
+                                            React Native
+                                            <span class="skill-level-indicator">Intermediate</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            AR/VR
+                                            <span class="skill-level-indicator">Beginner+</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            IoT
+                                            <span class="skill-level-indicator">Intermediate</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            Firebase
+                                            <span class="skill-level-indicator">Intermediate</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            UI/UX Design
+                                            <span class="skill-level-indicator">Beginner</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <button class="pc-apply-btn-enhanced">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Apply to Contribute
+                                </button>
+                            </div>
+                            
+                            <!-- Project Card 3 - Enhanced with Multiple Contacts -->
+                            <div class="project-feed-card" style="--card-index: 2;">
+                                <div class="project-feed-header">
+                                    <div>
+                                        <h3 class="project-feed-title">Sustainable Energy Monitoring Dashboard</h3>
+                                        <span class="project-status status-open">Open for Contributors</span>
+                                    </div>
+                                </div>
+                                
+                                <p class="project-description">
+                                    Creating a real-time dashboard to monitor campus energy consumption and suggest optimizations. The project involves data visualization, IoT sensors, and predictive analytics to promote sustainable energy usage across campus facilities.
+                                </p>
+                                
+                                <!-- Contact Information Section -->
+                                <div class="project-contact-section">
+                                    <h4><i class="fas fa-id-card"></i> Contact Information</h4>
+                                    
+                                    <!-- Primary Contact -->
+                                    <div class="project-owner-contact">
+                                        <div class="owner-avatar">
+                                            <i class="fas fa-user-tie"></i>
+                                        </div>
+                                        <div class="owner-contact-info">
+                                            <h4>Prof. Rohan Verma</h4>
+                                            <p>Environmental Engineering • Faculty Advisor</p>
+                                            <div class="owner-contact-methods">
+                                                <a href="mailto:rohan.verma@skillconnect.edu" class="contact-method">
+                                                    <i class="fas fa-envelope"></i>
+                                                    Email (Primary)
+                                                </a>
+                                                <a href="tel:+919714394083" class="contact-method">
+                                                    <i class="fas fa-phone"></i>
+                                                    Office Phone
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Secondary Contact (Team Lead) -->
+                                    <div class="project-owner-contact" style="margin-top: 20px; background: rgba(255, 193, 7, 0.05);">
+                                        <div class="owner-avatar">
+                                            <i class="fas fa-user-graduate"></i>
+                                        </div>
+                                        <div class="owner-contact-info">
+                                            <h4>Aditi Dube (Team Lead)</h4>
+                                            <p>Environmental Engineering • 3rd Year</p>
+                                            <div class="owner-contact-methods">
+                                                <a href="mailto:aditi.dube@skillconnect.edu" class="contact-method">
+                                                    <i class="fas fa-envelope"></i>
+                                                    Email
+                                                </a>
+                                                <a href="https://wa.me/919714394085" class="contact-method">
+                                                    <i class="fab fa-whatsapp"></i>
+                                                    WhatsApp
+                                                </a>
+                                                <a href="https://linkedin.com/in/aditidube" class="contact-method">
+                                                    <i class="fab fa-linkedin"></i>
+                                                    LinkedIn
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Additional Contact Details -->
+                                    <div class="contact-details">
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-university"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Department</div>
+                                                <div class="contact-value">Environmental Engineering</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-clock"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Response Time</div>
+                                                <div class="contact-value">Within 48 hours</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Office Hours</div>
+                                                <div class="contact-value">Tue-Thu, 11 AM - 3 PM</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Location</div>
+                                                <div class="contact-value">Engineering Block, Room 210</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Project Communication Details -->
+                                    <div class="contact-channels" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border);">
+                                        <h5 style="color: var(--dark); margin-bottom: 12px; font-size: 0.95rem;">
+                                            <i class="fas fa-bullhorn"></i> Communication Guidelines
+                                        </h5>
+                                        <div style="margin-bottom: 10px;">
+                                            <p style="font-size: 0.85rem; color: var(--dark); margin-bottom: 5px;">
+                                                <strong>For Technical Questions:</strong> Contact Aditi Dube (Team Lead)
+                                            </p>
+                                            <p style="font-size: 0.85rem; color: var(--dark); margin-bottom: 5px;">
+                                                <strong>For Project Scope/Approval:</strong> Contact Prof. Rohan Verma
+                                            </p>
+                                            <p style="font-size: 0.85rem; color: var(--dark);">
+                                                <strong>Weekly Meetings:</strong> Wednesdays, 4 PM in Engg Conference Room
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Quick Contact Actions -->
+                                    <div class="contact-actions">
+                                        <a href="mailto:aditi.dube@skillconnect.edu" class="contact-btn email">
+                                            <i class="fas fa-envelope"></i>
+                                            Contact Team Lead
+                                        </a>
+                                        <a href="mailto:rohan.verma@skillconnect.edu" class="contact-btn" style="background: linear-gradient(135deg, #17a2b8, #138496); color: white;">
+                                            <i class="fas fa-user-tie"></i>
+                                            Contact Faculty Advisor
+                                        </a>
+                                        <a href="https://teams.microsoft.com/l/team/energy-project" class="contact-btn" style="background: linear-gradient(135deg, #6264a7, #464775); color: white;">
+                                            <i class="fas fa-video"></i>
+                                            Join Microsoft Teams
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Project Details -->
+                                <div class="project-meta-enhanced">
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">Team Size</div>
+                                            <div class="meta-value">5-7 Contributors</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-calendar"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">Duration</div>
+                                            <div class="meta-value">6 Months</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-code-branch"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">GitHub</div>
+                                            <div class="meta-value">github.com/energy-monitor</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-tasks"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">Progress</div>
+                                            <div class="meta-value">15% Complete</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Required Skills -->
+                                <div class="project-skills-enhanced">
+                                    <h4><i class="fas fa-code"></i> Required Skills</h4>
+                                    <div class="skills-tags-enhanced">
+                                        <span class="skill-tag-enhanced">
+                                            Python
+                                            <span class="skill-level-indicator">Intermediate</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            Data Visualization
+                                            <span class="skill-level-indicator">Intermediate</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            IoT Sensors
+                                            <span class="skill-level-indicator">Beginner+</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            React.js
+                                            <span class="skill-level-indicator">Intermediate</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            Data Analysis
+                                            <span class="skill-level-indicator">Advanced</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <button class="pc-apply-btn-enhanced">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Apply to Contribute
+                                </button>
+                            </div>
+                            
+                            <!-- Project Card 4 - Mental Health Chatbot -->
+                            <div class="project-feed-card" style="--card-index: 3;">
+                                <div class="project-feed-header">
+                                    <div>
+                                        <h3 class="project-feed-title">Mental Health Support Chatbot</h3>
+                                        <span class="project-status status-in-progress">In Progress</span>
+                                    </div>
+                                </div>
+                                
+                                <p class="project-description">
+                                    Developing an AI-powered chatbot to provide mental health support and resources to students. The chatbot will offer empathetic conversations, mindfulness exercises, and connect students with campus counseling services when needed.
+                                </p>
+                                
+                                <!-- Contact Information Section -->
+                                <div class="project-contact-section">
+                                    <h4><i class="fas fa-id-card"></i> Contact Information</h4>
+                                    
+                                    <!-- Project Owner Contact -->
+                                    <div class="project-owner-contact">
+                                        <div class="owner-avatar">
+                                            <i class="fas fa-user-graduate"></i>
+                                        </div>
+                                        <div class="owner-contact-info">
+                                            <h4>Janak Parmar</h4>
+                                            <p>Psychology & CS Major • Project Lead</p>
+                                            <div class="owner-contact-methods">
+                                                <a href="mailto:janak.parmar@skillconnect.edu" class="contact-method">
+                                                    <i class="fas fa-envelope"></i>
+                                                    Email
+                                                </a>
+                                                <a href="tel:+919714394084" class="contact-method">
+                                                    <i class="fas fa-phone"></i>
+                                                    Call
+                                                </a>
+                                                <a href="https://wa.me/919714394084" class="contact-method">
+                                                    <i class="fab fa-whatsapp"></i>
+                                                    WhatsApp
+                                                </a>
+                                                <a href="https://linkedin.com/in/janakparmar" class="contact-method">
+                                                    <i class="fab fa-linkedin"></i>
+                                                    LinkedIn
+                                                </a>
+                                                <a href="https://github.com/janakparmar" class="contact-method">
+                                                    <i class="fab fa-github"></i>
+                                                    GitHub
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Faculty Advisor -->
+                                    <div class="project-owner-contact" style="margin-top: 15px; background: rgba(0, 123, 255, 0.05);">
+                                        <div class="owner-avatar">
+                                            <i class="fas fa-user-md"></i>
+                                        </div>
+                                        <div class="owner-contact-info">
+                                            <h4>Dr. Neha Patel (Faculty Advisor)</h4>
+                                            <p>Psychology Department • Mental Health Expert</p>
+                                            <div class="owner-contact-methods">
+                                                <a href="mailto:neha.patel@skillconnect.edu" class="contact-method">
+                                                    <i class="fas fa-envelope"></i>
+                                                    Email Faculty
+                                                </a>
+                                                <a href="tel:+919714394086" class="contact-method">
+                                                    <i class="fas fa-phone"></i>
+                                                    Office Extension: 234
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Additional Contact Details -->
+                                    <div class="contact-details">
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-university"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Departments</div>
+                                                <div class="contact-value">Psychology & Computer Science</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-clock"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Response Time</div>
+                                                <div class="contact-value">Within 6 hours</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Availability</div>
+                                                <div class="contact-value">Flexible Hours</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="contact-item">
+                                            <div class="contact-icon">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                            </div>
+                                            <div class="contact-info">
+                                                <div class="contact-label">Campus Location</div>
+                                                <div class="contact-value">Student Center, Room 102</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Communication & Support -->
+                                    <div class="contact-channels" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border);">
+                                        <h5 style="color: var(--dark); margin-bottom: 12px; font-size: 0.95rem;">
+                                            <i class="fas fa-headset"></i> Support & Communication
+                                        </h5>
+                                        <div style="margin-bottom: 15px;">
+                                            <p style="font-size: 0.85rem; color: var(--dark); margin-bottom: 5px;">
+                                                <strong>Emergency Contact:</strong> Campus Counseling Center - Ext. 911
+                                            </p>
+                                            <p style="font-size: 0.85rem; color: var(--dark); margin-bottom: 5px;">
+                                                <strong>Project Discussions:</strong> Slack workspace available
+                                            </p>
+                                            <p style="font-size: 0.85rem; color: var(--dark);">
+                                                <strong>Sensitive Data Policy:</strong> All communications are confidential
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Quick Contact Actions -->
+                                    <div class="contact-actions">
+                                        <a href="mailto:janak.parmar@skillconnect.edu" class="contact-btn email">
+                                            <i class="fas fa-envelope"></i>
+                                            Send Email
+                                        </a>
+                                        <a href="https://wa.me/919714394084" class="contact-btn whatsapp">
+                                            <i class="fab fa-whatsapp"></i>
+                                            WhatsApp Message
+                                        </a>
+                                        <a href="https://slack.com/mentalhealth-chatbot" class="contact-btn" style="background: linear-gradient(135deg, #4A154B, #611f69); color: white;">
+                                            <i class="fab fa-slack"></i>
+                                            Join Slack
+                                        </a>
+                                        <a href="https://calendly.com/janakparmar/interview" class="contact-btn" style="background: linear-gradient(135deg, #00b894, #00a085); color: white;">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            Schedule Interview
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Project Details -->
+                                <div class="project-meta-enhanced">
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">Team Size</div>
+                                            <div class="meta-value">3-4 Contributors</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-calendar"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">Duration</div>
+                                            <div class="meta-value">5 Months</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-code-branch"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">GitHub</div>
+                                            <div class="meta-value">github.com/mental-health-chatbot</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="meta-item-enhanced">
+                                        <div class="meta-icon">
+                                            <i class="fas fa-tasks"></i>
+                                        </div>
+                                        <div class="meta-content">
+                                            <div class="meta-label">Progress</div>
+                                            <div class="meta-value">60% Complete</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Required Skills -->
+                                <div class="project-skills-enhanced">
+                                    <h4><i class="fas fa-code"></i> Required Skills</h4>
+                                    <div class="skills-tags-enhanced">
+                                        <span class="skill-tag-enhanced">
+                                            Natural Language Processing
+                                            <span class="skill-level-indicator">Intermediate</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            Python
+                                            <span class="skill-level-indicator">Intermediate</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            Web Development
+                                            <span class="skill-level-indicator">Beginner+</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            Psychology Knowledge
+                                            <span class="skill-level-indicator">Beginner</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            API Integration
+                                            <span class="skill-level-indicator">Intermediate</span>
+                                        </span>
+                                        <span class="skill-tag-enhanced">
+                                            Data Privacy
+                                            <span class="skill-level-indicator">Important</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <button class="pc-apply-btn-enhanced">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Apply to Contribute
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- RIGHT: Create Project (Normal Form) -->
+                <!-- RIGHT: Create Project + Incoming Requests -->
                 <div class="right-sidebar">
-                    <div class="card">
+                    <div class="card full-height-card">
+                        <!-- Create Project -->
                         <div class="card-header">
-                            <div class="card-title">Create New Project</div>
-                            <span style="color:var(--gray); font-size:0.9rem;">Share your ideas with the community</span>
+                            <div class="card-title">Raise a New Project</div>
                         </div>
-                        
-                        <div class="project-upload-form">
+
+                        <div class="project-upload-form" style="padding: 20px;">
                             <div class="form-group">
-                                <label>Project Title *</label>
-                                <input type="text" class="form-control" id="pc_projTitle" placeholder="Enter project title" required>
+                                <label for="pc_projTitle" style="font-weight:600; margin-bottom:8px;">Project Title</label>
+                                <input type="text" class="form-control" id="pc_projTitle" placeholder="Enter project title">
                             </div>
                             
                             <div class="form-group">
-                                <label>Project Description *</label>
-                                <textarea class="form-control" id="pc_projDesc" placeholder="Describe your project in detail..." rows="4" required></textarea>
+                                <label for="pc_projDesc" style="font-weight:600; margin-bottom:8px;">Project Description</label>
+                                <textarea class="form-control" id="pc_projDesc" rows="3" placeholder="Describe your project"></textarea>
                             </div>
                             
                             <div class="form-group">
-                                <label>GitHub Repository URL (optional)</label>
-                                <input type="text" class="form-control" id="pc_projGithub" placeholder="https://github.com/username/repo">
+                                <label for="pc_projGithub" style="font-weight:600; margin-bottom:8px;">GitHub Repository URL</label>
+                                <input type="text" class="form-control" id="pc_projGithub" placeholder="Optional">
                             </div>
                             
                             <div class="form-group">
-                                <label>Required Skills * (comma separated)</label>
-                                <input type="text" class="form-control" id="pc_projSkills" placeholder="e.g., React, Node.js, Machine Learning" required>
+                                <label for="pc_projSkills" style="font-weight:600; margin-bottom:8px;">Required Skills</label>
+                                <input type="text" class="form-control" id="pc_projSkills" placeholder="e.g., React, Node.js, ML">
                             </div>
                             
                             <div class="form-group">
-                                <label>Roles Needed * (comma separated)</label>
-                                <input type="text" class="form-control" id="pc_projRoles" placeholder="e.g., Frontend, Backend, UI/UX Designer" required>
+                                <label for="pc_projRoles" style="font-weight:600; margin-bottom:8px;">Roles Needed</label>
+                                <input type="text" class="form-control" id="pc_projRoles" placeholder="e.g., Frontend, Backend, Designer">
                             </div>
                             
                             <div class="form-group">
-                                <label>Expected Time Commitment (optional)</label>
-                                <select class="form-control" id="pc_projTimeCommitment">
-                                    <option value="">Select commitment level</option>
-                                    <option value="low">Low (1-5 hrs/week)</option>
-                                    <option value="medium">Medium (5-10 hrs/week)</option>
-                                    <option value="high">High (10+ hrs/week)</option>
-                                </select>
+                                <label for="pc_projContact" style="font-weight:600; margin-bottom:8px;">Contact Information</label>
+                                <input type="email" class="form-control" id="pc_projContactEmail" placeholder="Your email address" style="margin-bottom: 10px;">
+                                <input type="tel" class="form-control" id="pc_projContactPhone" placeholder="Phone number (optional)">
                             </div>
                             
-                            <button class="btn btn-primary" style="width: 100%; margin-top: 15px;" id="pc_postProjectBtn">
+                            <button class="btn btn-primary" id="pc_postProjectBtn">
                                 <i class="fas fa-upload"></i> Post Project
                             </button>
                         </div>
@@ -1632,6 +2544,6 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="design.js"></script>
 </body>
 </html>
